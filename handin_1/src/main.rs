@@ -24,24 +24,24 @@ fn get_hash(bytes: &[u8]) -> Vec<u8> {
     return hash_bytes;
 }
 
-fn independent_output_worker(
-    tuples: Vec<DataTuple>,
-    partition_mask: u16,
-) -> JoinHandle<HashMap<u16, Vec<DataTuple>>> {
-    let partition_count = partition_mask * 2; 
-    return std::thread::spawn(move || {
-        let mut map = HashMap::new();
-        let hash = sha256::digest(&tuples[0].key.to_ne_bytes());
-        let partition_by = &hash.as_bytes()[0..2];
-        let key: u16 = u16::from(partition_by[0]) + u16::from(partition_by[1]);
-        if(map.contains_key(&key)) {
-            let list = map.get(&key).expect(&format!("Map does not contain key {}", key));
-            *list.insert(index, element)
-        }
-        // map.insert(key, v)
-        return map;
-    });
-}
+// fn independent_output_worker(
+//     tuples: Vec<DataTuple>,
+//     partition_mask: u16,
+// ) -> JoinHandle<HashMap<u16, Vec<DataTuple>>> {
+//     let partition_count = partition_mask * 2; 
+//     return std::thread::spawn(move || {
+//         let mut map = HashMap::new();
+//         let hash = sha256::digest(&tuples[0].key.to_ne_bytes());
+//         let partition_by = &hash.as_bytes()[0..2];
+//         let key: u16 = u16::from(partition_by[0]) + u16::from(partition_by[1]);
+//         if(map.contains_key(&key)) {
+//             let list = map.get(&key).expect(&format!("Map does not contain key {}", key));
+//             *list.insert(index, element)
+//         }
+//         // map.insert(key, v)
+//         return map;
+//     });
+// }
 
 fn gen_data(count: usize) -> Vec<DataTuple> {
     let mut rng = rand::thread_rng();
