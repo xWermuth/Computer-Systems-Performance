@@ -10,55 +10,73 @@
 
 using namespace std;
 
-/******************************************* GLOBAL VARIALBES *******************************************/
-#define COUNT 10
-#define THREAD_COUNT 2
-
 /******************************************* FOWARD REFRENCING *******************************************/
-typedef std::pair<int, int> DataTuple;
-u_char* sha256(u_char *, size_t);
+typedef std::pair<uint64_t, uint64_t> DataTuple;
+u_char *sha256(u_char *, size_t);
 vector<DataTuple> gen_tuples(int);
 void concurrent_output(vector<DataTuple>);
 void *partioning_worker(void *arg);
 template <typename T>
-vector<vector<T> >* split_vector(const vector<T>& vec, size_t n);
+vector<vector<T> > *split_vector(const vector<T> &vec, size_t n);
 
-struct WorkerPayload {
-    vector<DataTuple>* buffer;
-    vector<DataTuple>* chunks;
+struct WorkerPayload
+{
+    vector<DataTuple> *buffer;
+    vector<DataTuple> *chunks;
 };
 
+/******************************************* GLOBAL VARIABLES *******************************************/
+
+#define COUNT 10
+#define THREAD_COUNT 2
+pthread_mutex_t my_lock;
 
 /******************************************* ACTUAL CODE *******************************************/
 
 /// @param bytes bytes to hash
 /// @param size the amount of bytes that @p `bytes` points to
 /// @return 32-byte sha256 hash
-u_char* sha256(u_char* bytes, size_t size)
+u_char *sha256(u_char *bytes, size_t size)
 {
-    u_char *hash = (u_char*)malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
+    u_char *hash = (u_char *)malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, bytes, size);
     SHA256_Final(hash, &sha256);
     stringstream ss;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        cout << hex << setw(2) << setfill('0') << (int)hash[i];
-    }
-    cout << endl;
+    // for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    // {
+    //     cout << hex << setw(2) << setfill('0') << (int)hash[i];
+    // }
+    // cout << endl;
     return hash;
     // return ss.str();
 }
 
-int main() {
-    char *str = "1234567890_1";
-    u_char *hashed = sha256((u_char*)str, 12);
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+void print_hash(u_char *hash)
+{
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     {
-        cout << hex << setw(2) << setfill('0') << (int)hashed[i];
+        cout << hex << setw(2) << setfill('0') << (int)hash[i];
     }
     cout << endl;
+}
+
+int main()
+{
+    if (pthread_mutex_init(&my_lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        return 1;
+    }
+    uint64_t x = 0x427c3c55l;
+    char *str = (char *)&x;
+    u_char *hashed = sha256((u_char *)str, 12);
+    // for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    // {
+    //     cout << hex << setw(2) << setfill('0') << (int)hashed[i];
+    // }
+    // cout << endl;
 
     // cout << sha256(str, 12) << endl;
     // cout << sha256("1234567890_2") << endl;
@@ -66,26 +84,26 @@ int main() {
     // cout << sha256("1234567890_4") << endl;
     vector<DataTuple> tuples = gen_tuples(COUNT);
     concurrent_output(tuples);
+    pthread_mutex_destroy(&my_lock);
     return 0;
 }
 
-
-
-vector<DataTuple> gen_tuples(int n) {
+vector<DataTuple> gen_tuples(int n)
+{
     set<int> my_set;
     vector<DataTuple> tuples(n);
-    
+
     for (size_t i = 0; i < n; i++)
     {
-        int key = rand();
-        while(my_set.find(key) != my_set.end())
+        uint64_t key = rand() << 31 | rand();
+        while (my_set.find(key) != my_set.end())
         {
-            key = rand();
-        } 
+            key = rand() << 31 | rand();
+        }
 
-        tuples[i] = make_pair(key, rand());
+        tuples[i] = make_pair(key, rand() << 31 | rand());
     }
-    
+
     return tuples;
 }
 
@@ -93,7 +111,7 @@ void concurrent_output(vector<DataTuple> tuples)
 {
     pthread_t threads[THREAD_COUNT];
     vector<DataTuple> buffer(COUNT);
-    vector<vector<DataTuple> >* chunks = split_vector(tuples, THREAD_COUNT);
+    vector<vector<DataTuple> > *chunks = split_vector(tuples, THREAD_COUNT);
 
     for (size_t i = 0; i < chunks->size(); i++)
     {
@@ -103,37 +121,42 @@ void concurrent_output(vector<DataTuple> tuples)
         cout << "Spawning thread" << endl;
         int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
 
-        if(rc) 
+        if (rc)
         {
             cout << "ERROR; return code from pthread_create() is " << rc << endl;
             break;
         }
     }
-    
+
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
         pthread_join(threads[i], NULL);
     }
-    
 }
 
 void *partioning_worker(void *arg)
 {
-    struct WorkerPayload* payload = (struct WorkerPayload*)arg;
-    cout << "hello from worker" << endl;
+    struct WorkerPayload *payload = (struct WorkerPayload *)arg;
+
     for (auto tuple : *payload->chunks)
     {
-        cout << "I found a tuple " << tuple.first << endl; 
+        auto dataRef = &tuple;
+        u_char *hash = sha256((u_char *)&(dataRef->second), sizeof(uint64_t));
+        pthread_mutex_lock(&my_lock);
+        print_hash(hash);
+        payload->buffer->push_back(*dataRef);
+        pthread_mutex_unlock(&my_lock);
+        delete hash;
     }
 }
 
 /**
-* https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
-*/
-template<typename T>
-vector<vector<T> >* split_vector(const vector<T>& vec, size_t n)
+ * https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
+ */
+template <typename T>
+vector<vector<T> > *split_vector(const vector<T> &vec, size_t n)
 {
-    vector<vector<T> >* outVec = new vector<vector<T> >();
+    vector<vector<T> > *outVec = new vector<vector<T> >();
 
     size_t length = vec.size() / n;
     size_t remain = vec.size() % n;
