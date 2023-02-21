@@ -6,13 +6,12 @@
 #include <vector>
 #include <tuple>
 #include <cstdlib>
-#include <openssl/sha.h>
+#include "utils.h"
 
 using namespace std;
 
 /******************************************* FOWARD REFRENCING *******************************************/
 typedef std::pair<uint64_t, uint64_t> DataTuple;
-u_char *sha256(u_char *, size_t);
 vector<DataTuple> gen_tuples(int);
 void concurrent_output(vector<DataTuple>);
 void *partioning_worker(void *arg);
@@ -33,35 +32,6 @@ pthread_mutex_t my_lock;
 
 /******************************************* ACTUAL CODE *******************************************/
 
-/// @param bytes bytes to hash
-/// @param size the amount of bytes that @p `bytes` points to
-/// @return 32-byte sha256 hash
-u_char *sha256(u_char *bytes, size_t size)
-{
-    u_char *hash = (u_char *)malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, bytes, size);
-    SHA256_Final(hash, &sha256);
-    stringstream ss;
-    // for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    // {
-    //     cout << hex << setw(2) << setfill('0') << (int)hash[i];
-    // }
-    // cout << endl;
-    return hash;
-    // return ss.str();
-}
-
-void print_hash(u_char *hash)
-{
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        cout << hex << setw(2) << setfill('0') << (int)hash[i];
-    }
-    cout << endl;
-}
-
 int main()
 {
     if (pthread_mutex_init(&my_lock, NULL) != 0)
@@ -71,7 +41,7 @@ int main()
     }
     uint64_t x = 0x427c3c55l;
     char *str = (char *)&x;
-    u_char *hashed = sha256((u_char *)str, 12);
+    u_char *hashed = Utils::sha256((u_char *)str, 12);
     // for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     // {
     //     cout << hex << setw(2) << setfill('0') << (int)hashed[i];
@@ -141,9 +111,9 @@ void *partioning_worker(void *arg)
     for (auto tuple : *payload->chunks)
     {
         auto dataRef = &tuple;
-        u_char *hash = sha256((u_char *)&(dataRef->second), sizeof(uint64_t));
+        u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
         pthread_mutex_lock(&my_lock);
-        print_hash(hash);
+        Utils::print_hash(hash);
         payload->buffer->push_back(*dataRef);
         pthread_mutex_unlock(&my_lock);
         delete hash;
