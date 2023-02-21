@@ -21,11 +21,11 @@ vector<DataTuple> gen_tuples(int);
 void concurrent_output(vector<DataTuple>);
 void *partioning_worker(void *arg);
 template <typename T>
-vector<vector<T> > split_vector(const vector<T>& vec, size_t n);
+vector<vector<T> >* split_vector(const vector<T>& vec, size_t n);
 
 struct WorkerPayload {
-    vector<DataTuple> buffer;
-    vector<DataTuple> chunks;
+    vector<DataTuple>* buffer;
+    vector<DataTuple>* chunks;
 };
 
 
@@ -65,7 +65,7 @@ int main() {
     // cout << sha256("1234567890_3") << endl;
     // cout << sha256("1234567890_4") << endl;
     vector<DataTuple> tuples = gen_tuples(COUNT);
-    // concurrent_output(tuples);
+    concurrent_output(tuples);
     return 0;
 }
 
@@ -93,12 +93,15 @@ void concurrent_output(vector<DataTuple> tuples)
 {
     pthread_t threads[THREAD_COUNT];
     vector<DataTuple> buffer(COUNT);
-    vector<vector<DataTuple> > chunks = split_vector(tuples, THREAD_COUNT);
+    vector<vector<DataTuple> >* chunks = split_vector(tuples, THREAD_COUNT);
 
-    for (size_t i = 0; i < chunks.size(); i++)
+    for (size_t i = 0; i < chunks->size(); i++)
     {
-        struct WorkerPayload *payload = (struct WorkerPayload*)malloc(sizeof(struct ))
-        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &chunks[i]);
+        struct WorkerPayload payload;
+        payload.buffer = &buffer;
+        payload.chunks = &(chunks->at(i));
+        cout << "Spawning thread" << endl;
+        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
 
         if(rc) 
         {
@@ -116,21 +119,21 @@ void concurrent_output(vector<DataTuple> tuples)
 
 void *partioning_worker(void *arg)
 {
-    vector<DataTuple>* tuples_chunk = (vector<DataTuple>*)arg;
-    for (auto tuple : *tuples_chunk)
+    struct WorkerPayload* payload = (struct WorkerPayload*)arg;
+    cout << "hello from worker" << endl;
+    for (auto tuple : *payload->chunks)
     {
         cout << "I found a tuple " << tuple.first << endl; 
     }
-    
 }
 
 /**
 * https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
 */
 template<typename T>
-vector<vector<T> > split_vector(const vector<T>& vec, size_t n)
+vector<vector<T> >* split_vector(const vector<T>& vec, size_t n)
 {
-    vector<vector<T> > outVec;
+    vector<vector<T> >* outVec = new vector<vector<T> >();
 
     size_t length = vec.size() / n;
     size_t remain = vec.size() % n;
@@ -142,7 +145,7 @@ vector<vector<T> > split_vector(const vector<T>& vec, size_t n)
     {
         end += (remain > 0) ? (length + !!(remain--)) : length;
 
-        outVec.push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
+        outVec->push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
 
         begin = end;
     }
