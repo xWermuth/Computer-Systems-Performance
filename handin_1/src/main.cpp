@@ -26,8 +26,8 @@ struct WorkerPayload
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 10
-#define THREAD_COUNT 2
+#define COUNT 16777216
+#define THREAD_COUNT 32
 pthread_mutex_t my_lock;
 
 /******************************************* ACTUAL CODE *******************************************/
@@ -113,7 +113,7 @@ void *partioning_worker(void *arg)
         auto dataRef = &tuple;
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
         pthread_mutex_lock(&my_lock);
-        Utils::print_hash(hash);
+        // Utils::print_hash(hash);
         payload->buffer->push_back(*dataRef);
         pthread_mutex_unlock(&my_lock);
         delete hash;
