@@ -18,7 +18,7 @@
 Adding dependencies 
 
 ```
-.\vcpkg install openssl
+./vcpkg/vcpkg install openssl
 ```
 
 ## Test cases

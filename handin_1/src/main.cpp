@@ -7,7 +7,7 @@
 #include <tuple>
 #include <cstdlib>
 #include "utils.h"
-// #include "parallel_buffer.h"
+#include "parallel_buffer.h"
 
 using namespace std;
 
@@ -47,8 +47,8 @@ int main(int argc, char const *argv[])
     pthread_mutex_destroy(&my_lock);
 
     /******************************************* PAR BUFFER *******************************************/
-    // vector<DataTuple> tuples = Utils::gen_tuples(2);
-    // ParallelBuffer::run(&tuples, 2);
+    vector<DataTuple> tuples = Utils::gen_tuples(10);
+    ParallelBuffer::run(&tuples, 2);
 
     cout << "Life is a highway" << endl;
     return 0;
@@ -58,32 +58,32 @@ void concurrent_output(vector<DataTuple> tuples)
 {
     pthread_t threads[THREAD_COUNT];
     vector<DataTuple> buffer(COUNT);
-    vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
+    // vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
 
-    for (size_t i = 0; i < chunks->size(); i++)
-    {
-        struct WorkerPayload payload;
-        payload.buffer = &buffer;
-        payload.chunks = &(chunks->at(i));
-        cout << "Spawning thread" << endl;
-        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
+    // for (size_t i = 0; i < chunks->size(); i++)
+    // {
+    //     struct WorkerPayload payload;
+    //     payload.buffer = &buffer;
+    //     payload.chunks = &(chunks->at(i));
+    //     cout << "Spawning thread" << endl;
+    //     int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
 
-        if (rc)
-        {
-            cout << "ERROR; return code from pthread_create() is " << rc << endl;
-            break;
-        }
-    }
+    //     if (rc)
+    //     {
+    //         cout << "ERROR; return code from pthread_create() is " << rc << endl;
+    //         break;
+    //     }
+    // }
 
-    for (size_t i = 0; i < THREAD_COUNT; i++)
-    {
-        #ifdef METRICS
-        void *ret;
-        pthread_join(threads[i], &ret);
-        #else
-        pthread_join(threads[i], NULL);
-        #endif
-    }
+    // for (size_t i = 0; i < THREAD_COUNT; i++)
+    // {
+    //     #ifdef METRICS
+    //     void *ret;
+    //     pthread_join(threads[i], &ret);
+    //     #else
+    //     pthread_join(threads[i], NULL);
+    //     #endif
+    // }
 
 }
 
