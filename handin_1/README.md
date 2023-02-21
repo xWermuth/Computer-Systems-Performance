@@ -20,3 +20,13 @@ Adding dependencies
 ```
 .\vcpkg install openssl
 ```
+
+## Test cases
+
+Those from figure 5.
+
+Parameters
+- TODO
+
+Levels
+- TODO

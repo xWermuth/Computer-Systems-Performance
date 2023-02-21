@@ -6,6 +6,7 @@ project(handin_1)
 set(SOURCES
     src/utils.cpp
     src/main.cpp
+    src/parallel_buffer.cpp
 )
 
 
