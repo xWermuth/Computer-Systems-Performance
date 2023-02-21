@@ -2,110 +2,150 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <set>
+#include <vector>
+#include <tuple>
+#include <cstdlib>
+#include <openssl/sha.h>
 
 using namespace std;
 
-#include <openssl/sha.h>
-string sha256(const string str)
+/******************************************* GLOBAL VARIALBES *******************************************/
+#define COUNT 10
+#define THREAD_COUNT 2
+
+/******************************************* FOWARD REFRENCING *******************************************/
+typedef std::pair<int, int> DataTuple;
+u_char* sha256(u_char *, size_t);
+vector<DataTuple> gen_tuples(int);
+void concurrent_output(vector<DataTuple>);
+void *partioning_worker(void *arg);
+template <typename T>
+vector<vector<T> > split_vector(const vector<T>& vec, size_t n);
+
+struct WorkerPayload {
+    vector<DataTuple> buffer;
+    vector<DataTuple> chunks;
+};
+
+
+/******************************************* ACTUAL CODE *******************************************/
+
+/// @param bytes bytes to hash
+/// @param size the amount of bytes that @p `bytes` points to
+/// @return 32-byte sha256 hash
+u_char* sha256(u_char* bytes, size_t size)
 {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
+    u_char *hash = (u_char*)malloc(sizeof(unsigned char) * SHA256_DIGEST_LENGTH);
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
-    SHA256_Update(&sha256, str.c_str(), str.size());
+    SHA256_Update(&sha256, bytes, size);
     SHA256_Final(hash, &sha256);
     stringstream ss;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
     {
-        ss << hex << setw(2) << setfill('0') << (int)hash[i];
+        cout << hex << setw(2) << setfill('0') << (int)hash[i];
     }
-    return ss.str();
+    cout << endl;
+    return hash;
+    // return ss.str();
 }
 
 int main() {
-    cout << sha256("1234567890_1") << endl;
-    cout << sha256("1234567890_2") << endl;
-    cout << sha256("1234567890_3") << endl;
-    cout << sha256("1234567890_4") << endl;
+    char *str = "1234567890_1";
+    u_char *hashed = sha256((u_char*)str, 12);
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        cout << hex << setw(2) << setfill('0') << (int)hashed[i];
+    }
+    cout << endl;
+
+    // cout << sha256(str, 12) << endl;
+    // cout << sha256("1234567890_2") << endl;
+    // cout << sha256("1234567890_3") << endl;
+    // cout << sha256("1234567890_4") << endl;
+    vector<DataTuple> tuples = gen_tuples(COUNT);
+    // concurrent_output(tuples);
     return 0;
 }
 
 
-// #include <openssl/sha.h>
-// #include <vector>
-// #include <iostream>
 
-// using namespace std;
+vector<DataTuple> gen_tuples(int n) {
+    set<int> my_set;
+    vector<DataTuple> tuples(n);
+    
+    for (size_t i = 0; i < n; i++)
+    {
+        int key = rand();
+        while(my_set.find(key) != my_set.end())
+        {
+            key = rand();
+        } 
 
+        tuples[i] = make_pair(key, rand());
+    }
+    
+    return tuples;
+}
 
-// // typedef std::tuple<int, int> DataTuple;
+void concurrent_output(vector<DataTuple> tuples)
+{
+    pthread_t threads[THREAD_COUNT];
+    vector<DataTuple> buffer(COUNT);
+    vector<vector<DataTuple> > chunks = split_vector(tuples, THREAD_COUNT);
 
-// // std::vector<DataTuple> gen_tuples() {
+    for (size_t i = 0; i < chunks.size(); i++)
+    {
+        struct WorkerPayload *payload = (struct WorkerPayload*)malloc(sizeof(struct ))
+        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &chunks[i]);
 
-// // }
+        if(rc) 
+        {
+            cout << "ERROR; return code from pthread_create() is " << rc << endl;
+            break;
+        }
+    }
+    
+    for (size_t i = 0; i < THREAD_COUNT; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+    
+}
 
-// void sha256_hash_string (unsigned char hash[SHA256_DIGEST_LENGTH], char outputBuffer[65])
-// {
-//     int i = 0;
+void *partioning_worker(void *arg)
+{
+    vector<DataTuple>* tuples_chunk = (vector<DataTuple>*)arg;
+    for (auto tuple : *tuples_chunk)
+    {
+        cout << "I found a tuple " << tuple.first << endl; 
+    }
+    
+}
 
-//     for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-//     {
-//         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-//     }
+/**
+* https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
+*/
+template<typename T>
+vector<vector<T> > split_vector(const vector<T>& vec, size_t n)
+{
+    vector<vector<T> > outVec;
 
-//     outputBuffer[64] = 0;
-// }
+    size_t length = vec.size() / n;
+    size_t remain = vec.size() % n;
 
+    size_t begin = 0;
+    size_t end = 0;
 
-// void sha256_string(char *string, char outputBuffer[65])
-// {
-//     unsigned char hash[SHA256_DIGEST_LENGTH];
-//     SHA256_CTX sha256;
-//     SHA256_Init(&sha256);
-//     SHA256_Update(&sha256, string, strlen(string));
-//     SHA256_Final(hash, &sha256);
-//     int i = 0;
-//     for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-//     {
-//         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-//     }
-//     outputBuffer[64] = 0;
-// }
+    for (size_t i = 0; i < min(n, vec.size()); ++i)
+    {
+        end += (remain > 0) ? (length + !!(remain--)) : length;
 
-// int sha256_file(char *path, char outputBuffer[65])
-// {
-//     FILE *file = fopen(path, "rb");
-//     if(!file) return -534;
+        outVec.push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
 
-//     unsigned char hash[SHA256_DIGEST_LENGTH];
-//     SHA256_CTX sha256;
-//     SHA256_Init(&sha256);
-//     const int bufSize = 32768;
-//     unsigned char *buffer = malloc(bufSize);
-//     int bytesRead = 0;
-//     if(!buffer) return ENOMEM;
-//     while((bytesRead = fread(buffer, 1, bufSize, file)))
-//     {
-//         SHA256_Update(&sha256, buffer, bytesRead);
-//     }
-//     SHA256_Final(hash, &sha256);
+        begin = end;
+    }
 
-//     sha256_hash_string(hash, outputBuffer);
-//     fclose(file);
-//     free(buffer);
-//     return 0;
-// }
-
-
-// int main(){
-//     cout << "HELLO WORLD " << endl;
-//     static unsigned char buffer[65];
-//     sha256_string("string", buffer);
-//     printf("%s\n", buffer);
-//     return 0;
-// }
-
-// void concurrent_output(){
-
-// }
-
-// void partioning_task(){}
+    return outVec;
+}
