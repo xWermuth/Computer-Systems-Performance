@@ -18,7 +18,7 @@ find_package(OpenSSL REQUIRED)
 target_link_libraries(handin_1 PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 ")
 
 if(UNIX AND NOT APPLE)
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
