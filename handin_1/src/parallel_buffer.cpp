@@ -20,11 +20,12 @@ namespace ParallelBuffer
 {
     void run(vector<DataTuple> *data_tuples, int THREADS)
     {
-        cout << "Autobots roll out " << endl;
+        cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
         size_t length = COUNT / THREADS;
         size_t remain = COUNT % THREADS;
         pthread_t threads[THREADS];
+        struct Payload *args[THREADS];
         vector<DataTuple> buffer(COUNT);
         vector<vector<DataTuple>> *chunks = Utils::split_vector(*data_tuples, THREADS);
 
@@ -36,8 +37,7 @@ namespace ParallelBuffer
             payload->buffer = &buffer;
             payload->chunks = &(chunks->at(i));
             payload->start_idx = i * length;
-
-            // cout << "START_IDX " << payload.start_idx << endl;
+            args[i] = payload;
 
             cout << "Spawning thread" << endl;
             int rc = pthread_create(&threads[i], NULL, buf_worker, payload);
@@ -54,18 +54,10 @@ namespace ParallelBuffer
             pthread_join(threads[i], NULL);
         }
 
-        cout << "BUFFER INCLUDES " << endl;
-
-        for (auto temp : buffer)
+        // cleanup
+        for (size_t i = 0; i < THREADS; i++)
         {
-            cout << temp.first << endl;
-        }
-
-        cout << "DATA " << endl;
-
-        for (auto temp : *data_tuples)
-        {
-            cout << temp.first << endl;
+            free(args[i]);
         }
 
         cout << "Parallel buffer finito" << endl;
@@ -74,14 +66,11 @@ namespace ParallelBuffer
     void *buf_worker(void *arg)
     {
         Payload *payload = (Payload *)arg;
-        cout << "INSIDDE start idx " << payload->start_idx << endl;
-
         for (size_t i = 0; i < payload->chunks->size(); i++)
         {
             auto tuple = payload->chunks->at(i);
             u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
-            (*payload->buffer)[i + payload->start_idx] = make_pair(10, tuple.second);
-            // cout << "inside: " << tuple.first << endl;
+            (*payload->buffer)[i + payload->start_idx] = tuple;
             delete hash;
         }
 

@@ -47,8 +47,8 @@ int main(int argc, char const *argv[])
     pthread_mutex_destroy(&my_lock);
 
     /******************************************* PAR BUFFER *******************************************/
-    vector<DataTuple> tuples = Utils::gen_tuples(10);
-    ParallelBuffer::run(&tuples, 2);
+    vector<DataTuple> tuples = Utils::gen_tuples(1000000);
+    ParallelBuffer::run(&tuples, THREAD_COUNT);
 
     cout << "Life is a highway" << endl;
     return 0;
