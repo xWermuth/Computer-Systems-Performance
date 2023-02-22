@@ -9,6 +9,13 @@
 
 using namespace std;
 
+struct Payload
+{
+    size_t start_idx;
+    vector<DataTuple> *buffer;
+    vector<DataTuple> *chunks;
+};
+
 namespace ParallelBuffer
 {
     void run(vector<DataTuple> *data_tuples, int THREADS)
@@ -25,17 +32,15 @@ namespace ParallelBuffer
         {
             size_t partition_size = i == chunks->size() - 1 ? remain : length;
 
-            struct ParallelBuffer::Payload payload;
-            payload.buffer = &buffer;
-            payload.chunks = &(chunks->at(i));
-            payload.start_idx = i * length;
-            payload.end_idx = i * length + length;
+            struct Payload *payload = (Payload *) malloc(sizeof(struct Payload));
+            payload->buffer = &buffer;
+            payload->chunks = &(chunks->at(i));
+            payload->start_idx = i * length;
 
-            cout << "START_IDX " << payload.start_idx << endl;
-            cout << "END_IDX " << payload.end_idx << endl;
+            // cout << "START_IDX " << payload.start_idx << endl;
 
             cout << "Spawning thread" << endl;
-            int rc = pthread_create(&threads[i], NULL, &buf_worker, &payload);
+            int rc = pthread_create(&threads[i], NULL, buf_worker, payload);
 
             if (rc)
             {
@@ -68,17 +73,15 @@ namespace ParallelBuffer
 
     void *buf_worker(void *arg)
     {
-        struct ParallelBuffer::Payload *payload = (struct ParallelBuffer::Payload *)arg;
+        Payload *payload = (Payload *)arg;
         cout << "INSIDDE start idx " << payload->start_idx << endl;
-        cout << "INSIDDE end idx " << payload->end_idx << endl;
-        
-        // TODO change this and remove end_idx
-        for (size_t i = payload->start_idx; i < payload->end_idx; i++)
+
+        for (size_t i = 0; i < payload->chunks->size(); i++)
         {
-            auto dataRef = payload->chunks->at(i);
-            u_char *hash = Utils::sha256(dataRef.second, sizeof(uint64_t));
-            (*payload->buffer)[i] = make_pair(10, dataRef.second);
-            cout << "inside: " << payload->buffer->at(i).first << endl;
+            auto tuple = payload->chunks->at(i);
+            u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
+            (*payload->buffer)[i + payload->start_idx] = make_pair(10, tuple.second);
+            // cout << "inside: " << tuple.first << endl;
             delete hash;
         }
 
