@@ -55,13 +55,14 @@ namespace Utils
 
         for (size_t i = 0; i < n; i++)
         {
-            uint64_t key = rand() << 31 | rand();
+            uint64_t key = (((uint64_t)rand()) << 32) | rand();
             while (my_set.find(key) != my_set.end())
             {
-                key = rand() << 31 | rand();
+                std::cout << "colission" << std::endl;
+                key = (((uint64_t)rand()) << 32) | rand();
             }
 
-            my_tuples[i] = std::make_pair(key, rand() << 31 | rand());
+            my_tuples[i] = std::make_pair(key, (((uint64_t)rand()) << 32) | rand());
         }
 
         return my_tuples;
