@@ -7,16 +7,13 @@
 #include <tuple>
 #include <cstdlib>
 #include "utils.h"
+#include "parallel_buffer.h"
 
 using namespace std;
 
 /******************************************* FOWARD REFRENCING *******************************************/
-typedef std::pair<uint64_t, uint64_t> DataTuple;
-vector<DataTuple> gen_tuples(int);
 void concurrent_output(vector<DataTuple>);
 void *partioning_worker(void *arg);
-template <typename T>
-vector<vector<T> > *split_vector(const vector<T> &vec, size_t n);
 
 struct WorkerPayload
 {
@@ -26,62 +23,42 @@ struct WorkerPayload
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 16777216
-#define THREAD_COUNT 32
+#define COUNT 16777216 // 2^24
+#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
 pthread_mutex_t my_lock;
-
+typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
-int main()
+int main(int argc, char const *argv[])
 {
-    if (pthread_mutex_init(&my_lock, NULL) != 0)
-    {
-        printf("\n mutex init has failed\n");
-        return 1;
-    }
     uint64_t x = 0x427c3c55l;
     char *str = (char *)&x;
     u_char *hashed = Utils::sha256((u_char *)str, 12);
-    // for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+
+    /******************************************* CON BUFFER *******************************************/
+
+    // if (pthread_mutex_init(&my_lock, NULL) != 0)
     // {
-    //     cout << hex << setw(2) << setfill('0') << (int)hashed[i];
+    //     printf("\n mutex init has failed\n");
+    //     return 1;
     // }
-    // cout << endl;
-
-    // cout << sha256(str, 12) << endl;
-    // cout << sha256("1234567890_2") << endl;
-    // cout << sha256("1234567890_3") << endl;
-    // cout << sha256("1234567890_4") << endl;
-    vector<DataTuple> tuples = gen_tuples(COUNT);
-    concurrent_output(tuples);
+    // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    // concurrent_output(tuples);
     pthread_mutex_destroy(&my_lock);
+
+    /******************************************* PAR BUFFER *******************************************/
+    vector<DataTuple> tuples = Utils::gen_tuples(1000000);
+    ParallelBuffer::run(&tuples, THREAD_COUNT);
+
+    cout << "Life is a highway" << endl;
     return 0;
-}
-
-vector<DataTuple> gen_tuples(int n)
-{
-    set<int> my_set;
-    vector<DataTuple> tuples(n);
-
-    for (size_t i = 0; i < n; i++)
-    {
-        uint64_t key = rand() << 31 | rand();
-        while (my_set.find(key) != my_set.end())
-        {
-            key = rand() << 31 | rand();
-        }
-
-        tuples[i] = make_pair(key, rand() << 31 | rand());
-    }
-
-    return tuples;
 }
 
 void concurrent_output(vector<DataTuple> tuples)
 {
     pthread_t threads[THREAD_COUNT];
     vector<DataTuple> buffer(COUNT);
-    vector<vector<DataTuple> > *chunks = split_vector(tuples, THREAD_COUNT);
+    vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
 
     for (size_t i = 0; i < chunks->size(); i++)
     {
@@ -100,7 +77,12 @@ void concurrent_output(vector<DataTuple> tuples)
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
+        #ifdef METRICS
+        void *ret;
+        pthread_join(threads[i], &ret);
+        #else
         pthread_join(threads[i], NULL);
+        #endif
     }
 }
 
@@ -118,30 +100,5 @@ void *partioning_worker(void *arg)
         pthread_mutex_unlock(&my_lock);
         delete hash;
     }
-}
-
-/**
- * https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
- */
-template <typename T>
-vector<vector<T> > *split_vector(const vector<T> &vec, size_t n)
-{
-    vector<vector<T> > *outVec = new vector<vector<T> >();
-
-    size_t length = vec.size() / n;
-    size_t remain = vec.size() % n;
-
-    size_t begin = 0;
-    size_t end = 0;
-
-    for (size_t i = 0; i < min(n, vec.size()); ++i)
-    {
-        end += (remain > 0) ? (length + !!(remain--)) : length;
-
-        outVec->push_back(vector<T>(vec.begin() + begin, vec.begin() + end));
-
-        begin = end;
-    }
-
-    return outVec;
+    pthread_exit(NULL);
 }

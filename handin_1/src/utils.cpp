@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <openssl/sha.h>
 #include <iomanip>
+#include <vector>
+#include <set>
 #include "utils.h"
 
 namespace Utils
@@ -44,5 +46,25 @@ namespace Utils
             std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
         }
         std::cout << std::endl;
+    }
+
+    std::vector<DataTuple> gen_tuples(int n)
+    {
+        std::set<int> my_set;
+        std::vector<DataTuple> my_tuples(n);
+
+        for (size_t i = 0; i < n; i++)
+        {
+            uint64_t key = (((uint64_t)rand()) << 32) | rand();
+            while (my_set.find(key) != my_set.end())
+            {
+                std::cout << "colission" << std::endl;
+                key = (((uint64_t)rand()) << 32) | rand();
+            }
+
+            my_tuples[i] = std::make_pair(key, (((uint64_t)rand()) << 32) | rand());
+        }
+
+        return my_tuples;
     }
 }
