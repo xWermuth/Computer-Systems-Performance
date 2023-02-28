@@ -37,5 +37,5 @@ namespace Utils
     u_char *sha256(uint64_t bytes, size_t size);
     int getPartations(int hashbites);
     void print_hash(u_char *hash);
-    int hashBitsToIdx(u_char hash, int hashbits);
+    long long hashBitsToIdx(u_char hash, int hashbits);
 }

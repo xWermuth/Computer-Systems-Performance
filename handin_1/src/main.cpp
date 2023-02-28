@@ -32,7 +32,7 @@ void printBinSize(vector<Buffer> buffers);
 
 #define COUNT 16777216 // 2^24
 #define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
-#define HASH_BITS 10
+#define HASH_BITS 9
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
@@ -68,7 +68,7 @@ void concurrent_output(vector<DataTuple> tuples)
     for(int i = 0; i < partetions; i++)
     {
         struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>(COUNT/2);
+        buffer.tuples = new vector<DataTuple>(COUNT/4);
         buffer.idx = new atomic<int>{0};
         buffers[i] = buffer;
     }
@@ -115,7 +115,7 @@ void *partioning_worker(void *arg)
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
         // Utils::print_hash(hash);
         // Compute hash bits as index
-        int idx = Utils::hashBitsToIdx(*hash, HASH_BITS);
+        long long idx = Utils::hashBitsToIdx(*hash, HASH_BITS);
         Buffer buffer = (payload->buffer)->at(idx);
         int newIdx = buffer.idx->fetch_add(1);
         (*buffer.tuples)[newIdx] = tuple;
