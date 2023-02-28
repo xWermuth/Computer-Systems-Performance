@@ -12,8 +12,6 @@
 using namespace std;
 
 /******************************************* FOWARD REFRENCING *******************************************/
-void concurrent_output(vector<DataTuple>);
-void *partioning_worker(void *arg);
 
 struct Buffer {
     vector<DataTuple> *tuples;
@@ -26,12 +24,15 @@ struct WorkerPayload
     vector<DataTuple> *chunks;
 };
 
+void concurrent_output(vector<DataTuple>);
+void *partioning_worker(void *arg);
+void printBinSize(vector<Buffer> buffers);
+
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 10 // 2^24
-#define THREAD_COUNT 2 // 2 x AMD Opteron(tm) Processor 6386 SE 
+#define COUNT 16777216 // 2^24
+#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
 #define HASH_BITS 2
-pthread_mutex_t my_lock;
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
@@ -40,17 +41,13 @@ int main(int argc, char const *argv[])
     uint64_t x = 0x427c3c55l;
     char *str = (char *)&x;
     u_char *hashed = Utils::sha256((u_char *)str, 12);
-
+    cout << "THREADS: " << THREAD_COUNT << endl;
+    cout << "HASH_BITS: " << HASH_BITS << endl;
+    cout << "TUPLE COUNT: " << COUNT << endl;
     /******************************************* CON BUFFER *******************************************/
 
-    if (pthread_mutex_init(&my_lock, NULL) != 0)
-    {
-        printf("\n mutex init has failed\n");
-        return 1;
-    }
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
     concurrent_output(tuples);
-    pthread_mutex_destroy(&my_lock);
 
     /******************************************* PAR BUFFER *******************************************/
     // vector<DataTuple> tuples = Utils::gen_tuples(1000000);
@@ -102,7 +99,11 @@ void concurrent_output(vector<DataTuple> tuples)
         pthread_join(threads[i], NULL);
         #endif
     }
+
+    printBinSize(buffers);
+   
 }
+
 
 void *partioning_worker(void *arg)
 {
@@ -114,7 +115,7 @@ void *partioning_worker(void *arg)
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
         // Utils::print_hash(hash);
         // Compute hash bits as index
-        int idx = 0;
+        int idx = Utils::hashBitsToIdx(*hash, HASH_BITS);
         Buffer buffer = (payload->buffer)->at(idx);
         int newIdx = buffer.idx->fetch_add(1);
         (*buffer.tuples)[newIdx] = tuple;
@@ -124,3 +125,20 @@ void *partioning_worker(void *arg)
     }
     pthread_exit(NULL);
 }
+
+void printBinSize(vector<Buffer> buffers)
+    {
+        int i = 0;
+        for (auto buf : buffers)
+        {
+            int count = 0;
+            for (auto tuple : *(buf.tuples))
+            {
+                if (tuple.first != 0)
+                {
+                    count++;
+                }
+            }
+            cout << "Bin " << (i++) << " count: " << count << endl;
+        }
+    }

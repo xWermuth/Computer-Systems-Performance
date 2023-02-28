@@ -5,7 +5,7 @@
 #include <vector>
 #include <set>
 #include "utils.h"
-#include<cmath>
+#include <cmath>
 
 namespace Utils
 {
@@ -72,5 +72,11 @@ namespace Utils
     int getPartations(int hashbites)
     {
         return pow(2.0, hashbites);
+    }
+
+    int hashBitsToIdx(u_char hash, int hashbits)
+    {
+        long long mask = ((1ULL << (hashbits & 0x3F)) & -(hashbits != 64)) - 1;
+        return hash & mask;
     }
 }
