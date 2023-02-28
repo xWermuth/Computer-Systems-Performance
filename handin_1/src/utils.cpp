@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include "utils.h"
+#include<cmath>
 
 namespace Utils
 {
@@ -66,5 +67,10 @@ namespace Utils
         }
 
         return my_tuples;
+    }
+
+    int getPartations(int hashbites)
+    {
+        return pow(2.0, hashbites);
     }
 }

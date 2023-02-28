@@ -18,7 +18,7 @@ struct Payload
 
 namespace ParallelBuffer
 {
-    void run(vector<DataTuple> *data_tuples, int THREADS)
+    void run(vector<DataTuple> *data_tuples, int THREADS, int hashbits)
     {
         cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();

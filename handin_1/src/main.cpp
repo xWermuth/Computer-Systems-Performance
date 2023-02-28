@@ -15,16 +15,22 @@ using namespace std;
 void concurrent_output(vector<DataTuple>);
 void *partioning_worker(void *arg);
 
+struct Buffer {
+    vector<DataTuple> *tuples;
+    atomic<int> *idx;    // Current writing index
+};
+
 struct WorkerPayload
 {
-    vector<DataTuple> *buffer;
+    vector<Buffer> *buffer;
     vector<DataTuple> *chunks;
 };
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 16777216 // 2^24
-#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
+#define COUNT 10 // 2^24
+#define THREAD_COUNT 2 // 2 x AMD Opteron(tm) Processor 6386 SE 
+#define HASH_BITS 2
 pthread_mutex_t my_lock;
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
@@ -37,18 +43,18 @@ int main(int argc, char const *argv[])
 
     /******************************************* CON BUFFER *******************************************/
 
-    // if (pthread_mutex_init(&my_lock, NULL) != 0)
-    // {
-    //     printf("\n mutex init has failed\n");
-    //     return 1;
-    // }
-    // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
-    // concurrent_output(tuples);
+    if (pthread_mutex_init(&my_lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        return 1;
+    }
+    vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    concurrent_output(tuples);
     pthread_mutex_destroy(&my_lock);
 
     /******************************************* PAR BUFFER *******************************************/
-    vector<DataTuple> tuples = Utils::gen_tuples(1000000);
-    ParallelBuffer::run(&tuples, THREAD_COUNT);
+    // vector<DataTuple> tuples = Utils::gen_tuples(1000000);
+    // ParallelBuffer::run(&tuples, THREAD_COUNT, HASH_BITS);
 
     cout << "Life is a highway" << endl;
     return 0;
@@ -56,17 +62,29 @@ int main(int argc, char const *argv[])
 
 void concurrent_output(vector<DataTuple> tuples)
 {
+    int partetions = Utils::getPartations(HASH_BITS);
     pthread_t threads[THREAD_COUNT];
-    vector<DataTuple> buffer(COUNT);
+    vector<Buffer> buffers(partetions);
+
+    // Init our buffer
+    for(int i = 0; i < partetions; i++)
+    {
+        struct Buffer buffer;
+        buffer.tuples = new vector<DataTuple>(COUNT);
+        buffer.idx = new atomic<int>{0};
+        buffers[i] = buffer;
+    }
+
     vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
 
     for (size_t i = 0; i < chunks->size(); i++)
     {
-        struct WorkerPayload payload;
-        payload.buffer = &buffer;
-        payload.chunks = &(chunks->at(i));
-        cout << "Spawning thread" << endl;
-        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
+        struct WorkerPayload *payload = (WorkerPayload *) malloc(sizeof(struct WorkerPayload));
+        payload->buffer = &buffers;
+        payload->chunks = &(chunks->at(i));
+        cout << "Spawning thread: " << endl;
+        // cout << "val " << buffers.at(0).idx.load() << endl;
+        int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
 
         if (rc)
         {
@@ -88,16 +106,20 @@ void concurrent_output(vector<DataTuple> tuples)
 
 void *partioning_worker(void *arg)
 {
-    struct WorkerPayload *payload = (struct WorkerPayload *)arg;
+    WorkerPayload *payload = (WorkerPayload *)arg;
 
     for (auto tuple : *payload->chunks)
     {
         auto dataRef = &tuple;
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
-        pthread_mutex_lock(&my_lock);
         // Utils::print_hash(hash);
-        payload->buffer->push_back(*dataRef);
-        pthread_mutex_unlock(&my_lock);
+        // Compute hash bits as index
+        int idx = 0;
+        Buffer buffer = (payload->buffer)->at(idx);
+        int newIdx = buffer.idx->fetch_add(1);
+        (*buffer.tuples)[newIdx] = tuple;
+
+        // Cleanup
         delete hash;
     }
     pthread_exit(NULL);
