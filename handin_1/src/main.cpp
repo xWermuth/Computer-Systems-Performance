@@ -32,7 +32,7 @@ void printBinSize(vector<Buffer> buffers);
 
 #define COUNT 16777216 // 2^24
 #define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
-#define HASH_BITS 2
+#define HASH_BITS 10
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
@@ -60,6 +60,7 @@ int main(int argc, char const *argv[])
 void concurrent_output(vector<DataTuple> tuples)
 {
     int partetions = Utils::getPartations(HASH_BITS);
+    cout << "partetions: " << partetions << endl; 
     pthread_t threads[THREAD_COUNT];
     vector<Buffer> buffers(partetions);
 
@@ -67,7 +68,7 @@ void concurrent_output(vector<DataTuple> tuples)
     for(int i = 0; i < partetions; i++)
     {
         struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>(COUNT);
+        buffer.tuples = new vector<DataTuple>(COUNT/2);
         buffer.idx = new atomic<int>{0};
         buffers[i] = buffer;
     }
@@ -80,7 +81,6 @@ void concurrent_output(vector<DataTuple> tuples)
         payload->buffer = &buffers;
         payload->chunks = &(chunks->at(i));
         cout << "Spawning thread: " << endl;
-        // cout << "val " << buffers.at(0).idx.load() << endl;
         int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
 
         if (rc)
