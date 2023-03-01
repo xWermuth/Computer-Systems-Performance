@@ -13,9 +13,10 @@ using namespace std;
 
 /******************************************* FOWARD REFRENCING *******************************************/
 
-struct Buffer {
+struct Buffer
+{
     vector<DataTuple> *tuples;
-    atomic<int> *idx;    // Current writing index
+    atomic<int> *idx; // Current writing index
 };
 
 struct WorkerPayload
@@ -30,9 +31,9 @@ void printBinSize(vector<Buffer> buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 16777216 // 2^24
-#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
-#define HASH_BITS 10
+#define COUNT 65536  // 2^24
+#define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
+#define HASH_BITS 2
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
@@ -46,14 +47,14 @@ int main(int argc, char const *argv[])
     cout << "TUPLE COUNT: " << COUNT << endl;
     /******************************************* CON BUFFER *******************************************/
 
-    vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
     // auto a = Utils::hashBitsToIdx(hashed, 10);
     // cout << "KEY: " << a << endl;
-    concurrent_output(tuples);
+    // concurrent_output(tuples);
 
     /******************************************* PAR BUFFER *******************************************/
-    // vector<DataTuple> tuples = Utils::gen_tuples(1000000);
-    // ParallelBuffer::run(&tuples, THREAD_COUNT, HASH_BITS);
+    vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    ParallelBuffer::run(&tuples, THREAD_COUNT, HASH_BITS);
 
     cout << "Life is a highway" << endl;
     return 0;
@@ -62,15 +63,15 @@ int main(int argc, char const *argv[])
 void concurrent_output(vector<DataTuple> tuples)
 {
     int partetions = Utils::getPartations(HASH_BITS);
-    cout << "partetions: " << partetions << endl; 
+    cout << "partetions: " << partetions << endl;
     pthread_t threads[THREAD_COUNT];
     vector<Buffer> buffers(partetions);
 
     // Init our buffer
-    for(int i = 0; i < partetions; i++)
+    for (int i = 0; i < partetions; i++)
     {
         struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>(COUNT/4);
+        buffer.tuples = new vector<DataTuple>(COUNT / 4);
         buffer.idx = new atomic<int>{0};
         buffers[i] = buffer;
     }
@@ -79,7 +80,7 @@ void concurrent_output(vector<DataTuple> tuples)
 
     for (size_t i = 0; i < chunks->size(); i++)
     {
-        struct WorkerPayload *payload = (WorkerPayload *) malloc(sizeof(struct WorkerPayload));
+        struct WorkerPayload *payload = (WorkerPayload *)malloc(sizeof(struct WorkerPayload));
         payload->buffer = &buffers;
         payload->chunks = &(chunks->at(i));
         cout << "Spawning thread: " << endl;
@@ -94,18 +95,16 @@ void concurrent_output(vector<DataTuple> tuples)
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
-        #ifdef METRICS
+#ifdef METRICS
         void *ret;
         pthread_join(threads[i], &ret);
-        #else
+#else
         pthread_join(threads[i], NULL);
-        #endif
+#endif
     }
 
     printBinSize(buffers);
-   
 }
-
 
 void *partioning_worker(void *arg)
 {
@@ -130,18 +129,18 @@ void *partioning_worker(void *arg)
 }
 
 void printBinSize(vector<Buffer> buffers)
+{
+    int i = 0;
+    for (auto buf : buffers)
     {
-        int i = 0;
-        for (auto buf : buffers)
+        int count = 0;
+        for (auto tuple : *(buf.tuples))
         {
-            int count = 0;
-            for (auto tuple : *(buf.tuples))
+            if (tuple.first != 0)
             {
-                if (tuple.first != 0)
-                {
-                    count++;
-                }
+                count++;
             }
-            cout << "Bin " << (i++) << " count: " << count << endl;
         }
+        cout << "Bin " << (i++) << " count: " << count << endl;
     }
+}
