@@ -23,26 +23,23 @@ struct WorkerPayload
 {
     vector<Buffer> *buffer;
     vector<DataTuple> *chunks;
+    int hash_bits;
 };
 
-void concurrent_output(vector<DataTuple>);
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS);
 void *partioning_worker(void *arg);
 void printBinSize(vector<Buffer> buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
 #define COUNT 16777216  // 2^24
-#define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
-#define HASH_BITS 18
+// #define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
+// #define HASH_BITS 18
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
 int main(int argc, char const *argv[])
 {
-    cout << "THREADS: " << THREAD_COUNT << endl;
-    cout << "HASH_BITS: " << HASH_BITS << endl;
-    cout << "TUPLE COUNT: " << COUNT << endl;
-
     // ./handin_1 -t 4 -h 8 -a parallel
     int threads;
     int hashbits;
@@ -50,41 +47,41 @@ int main(int argc, char const *argv[])
     for (size_t i = 1; i < argc; i++)
     {
         string const arg = argv[i];
-        switch (arg)
+
+        if(arg == "-t")
         {
-        case "-t":
-            threads = 1;
-            break;
-
-        case "-h":
-            hashbits = 1;
-            break;
-
-        case "-a":
-            algo = "";
-            break;
-        default:
-            break;
+            threads = atoi(argv[i + 1]);
+        } else if(arg == "-h")
+        {
+            hashbits = atoi(argv[i + 1]);
+        } else if(arg == "-a")
+        {
+            algo = string(argv[i + 1]);
         }
     }
-    
 
-    /******************************************* CON BUFFER *******************************************/
 
-    // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
-    // auto a = Utils::hashBitsToIdx(hashed, 10);
-    // cout << "KEY: " << a << endl;
-    // concurrent_output(tuples);
-
-    /******************************************* PAR BUFFER *******************************************/
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
-    ParallelBuffer::run(&tuples, THREAD_COUNT, HASH_BITS);
+    cout << "THREADS: " << threads << endl;
+    cout << "HASH_BITS: " << hashbits << endl;
+    cout << "Algorithm: " << algo << endl;
+    cout << "TUPLE COUNT: " << COUNT << endl;
+
+
+
+    if(algo == "parallel")
+    {
+        ParallelBuffer::run(&tuples, threads, hashbits);
+    } else 
+    {
+        concurrent_output(tuples, threads, hashbits);
+    }
 
     cout << "Life is a highway" << endl;
     return 0;
 }
 
-void concurrent_output(vector<DataTuple> tuples)
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS)
 {
     int partetions = Utils::getPartations(HASH_BITS);
     cout << "partetions: " << partetions << endl;
@@ -140,7 +137,7 @@ void *partioning_worker(void *arg)
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
         // Utils::print_hash(hash);
         // Compute hash bits as index
-        long long idx = Utils::hashBitsToIdx(hash, HASH_BITS);
+        long long idx = Utils::hashBitsToIdx(hash, payload->hash_bits);
         // cout << "HASH idx: " << idx << endl;
         Buffer buffer = (payload->buffer)->at(idx);
         int newIdx = buffer.idx->fetch_add(1);
