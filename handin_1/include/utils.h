@@ -5,6 +5,7 @@ typedef std::pair<uint64_t, uint64_t> DataTuple;
 
 namespace Utils
 {
+    typedef std::chrono::high_resolution_clock hp_clock;
     /**
      * https://stackoverflow.com/questions/6861089/how-to-split-a-vector-into-n-almost-equal-parts
      */

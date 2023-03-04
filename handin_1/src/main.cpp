@@ -35,7 +35,6 @@ void printBinSize(vector<Buffer> buffers);
 #define COUNT 16777216  // 2^24
 // #define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
 // #define HASH_BITS 18
-typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/
 
 int main(int argc, char const *argv[])
@@ -69,17 +68,18 @@ int main(int argc, char const *argv[])
     cout << "Algorithm: " << algo << endl;
     cout << "TUPLE COUNT: " << COUNT << endl;
 
-
-
-    if(algo == "parallel")
+    auto start = Utils::hp_clock::now();
+    if (algo == "parallel")
     {
         ParallelBuffer::run(&tuples, threads, hashbits, PARTITIONS);
     } else 
     {
         concurrent_output(tuples, threads, hashbits, PARTITIONS);
     }
+    auto end = Utils::hp_clock::now();
+    auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-    cout << "Life is a highway" << endl;
+    cout << "Time elapsed: " << diff << " ms" << endl;
     return 0;
 }
 
@@ -92,11 +92,12 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
     for (int i = 0; i < PARTITIONS; i++)
     {
         struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>(COUNT / 2);
+        buffer.tuples = new vector<DataTuple>((COUNT / PARTITIONS) * 1.2);
         buffer.idx = new atomic<int>{0};
         buffers[i] = buffer;
     }
 
+    auto start = Utils::hp_clock::now();
     vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
 
     for (size_t i = 0; i < chunks->size(); i++)
@@ -104,6 +105,7 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
         struct WorkerPayload *payload = (WorkerPayload *)malloc(sizeof(struct WorkerPayload));
         payload->buffer = &buffers;
         payload->chunks = &(chunks->at(i));
+        payload->hash_bits = HASH_BITS;
         int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
 
         if (rc)
@@ -122,8 +124,12 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
         pthread_join(threads[i], NULL);
 #endif
     }
+    
+    auto end = Utils::hp_clock::now();        
+    auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    cout << "INSIDE CONC Time elapsed: " << diff << " ms" << endl;
 
-    printBinSize(buffers);
+    // printBinSize(buffers);
 }
 
 void *partioning_worker(void *arg)
@@ -137,6 +143,7 @@ void *partioning_worker(void *arg)
         // Utils::print_hash(hash);
         // Compute hash bits as index
         long long idx = Utils::hashBitsToIdx(hash, payload->hash_bits);
+        // cout << idx << endl;
         // cout << "HASH idx: " << idx << endl;
         Buffer buffer = (payload->buffer)->at(idx);
         int newIdx = buffer.idx->fetch_add(1);

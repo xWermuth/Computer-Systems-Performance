@@ -7,9 +7,9 @@
 #include "utils.h"
 #include <cmath>
 
+
 namespace Utils
 {
-
     /// @param bytes bytes to hash
     /// @param size the amount of bytes that @p `bytes` points to
     /// @return 32-byte sha256 hash

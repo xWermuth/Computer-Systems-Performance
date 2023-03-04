@@ -2,4 +2,4 @@
 cd ./build
 cmake ..
 make
-./handin_1 -t 32 -h 2 -a parallel
+./handin_1 -t 2 -h 1 -a buf
