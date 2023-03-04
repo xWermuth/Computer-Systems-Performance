@@ -4,6 +4,7 @@ outFile="out.log"
 errFile="out.err"
 
 rm -f $outFile $errFile
+echo "algo,ms,t,h" > $outFile
 
 Green='\033[0;32m' 
 
@@ -30,7 +31,10 @@ for h in {1..18}
 do
     for t in $threads;
     do
-        ./build/handin_1 -t "$t" -h "$h" -a concurrent -q >> $outFile
+        for _ in {1..10}
+        do
+            ./build/handin_1 -t "$t" -h "$h" -a concurrent -q >> $outFile
+        done
     done    
 done
 
@@ -40,7 +44,10 @@ for h in {1..18}
 do
     for t in $threads;
     do
-        ./build/handin_1 -t "$t" -h "$h" -a parallel -q >> $outFile
+        for _ in {1..10}
+        do
+            ./build/handin_1 -t "$t" -h "$h" -a parallel -q >> $outFile
+        done
     done    
 done
 
