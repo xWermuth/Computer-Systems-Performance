@@ -12,93 +12,164 @@
 using namespace std;
 
 /******************************************* FOWARD REFRENCING *******************************************/
-void concurrent_output(vector<DataTuple>);
-void *partioning_worker(void *arg);
+
+struct Buffer
+{
+    vector<DataTuple> *tuples;
+    atomic<int> *idx; // Current writing index
+};
 
 struct WorkerPayload
 {
-    vector<DataTuple> *buffer;
+    vector<Buffer> *buffer;
     vector<DataTuple> *chunks;
+    int hash_bits;
 };
+
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS);
+void *partioning_worker(void *arg);
+void printBinSize(vector<Buffer> buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 16777216 // 2^24
-#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE 
-pthread_mutex_t my_lock;
-typedef std::chrono::high_resolution_clock hp_clock;
+#define COUNT 16777216  // 2^24
+// #define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
+// #define HASH_BITS 18
 /******************************************* ACTUAL CODE *******************************************/
 
 int main(int argc, char const *argv[])
 {
-    uint64_t x = 0x427c3c55l;
-    char *str = (char *)&x;
-    u_char *hashed = Utils::sha256((u_char *)str, 12);
+    // ./handin_1 -t 4 -h 8 -a parallel
+    int threads;
+    int hashbits;
+    string algo;
+    for (size_t i = 1; i < argc; i++)
+    {
+        string const arg = argv[i];
 
-    /******************************************* CON BUFFER *******************************************/
+        if(arg == "-t")
+        {
+            threads = atoi(argv[i + 1]);
+        } else if(arg == "-h")
+        {
+            hashbits = atoi(argv[i + 1]);
+        } else if(arg == "-a")
+        {
+            algo = string(argv[i + 1]);
+        }
+        else if(arg == "-q")
+        {
+            Utils::quiet = true;
+        }
+    }
 
-    // if (pthread_mutex_init(&my_lock, NULL) != 0)
-    // {
-    //     printf("\n mutex init has failed\n");
-    //     return 1;
-    // }
-    // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
-    // concurrent_output(tuples);
-    pthread_mutex_destroy(&my_lock);
 
-    /******************************************* PAR BUFFER *******************************************/
-    vector<DataTuple> tuples = Utils::gen_tuples(1000000);
-    ParallelBuffer::run(&tuples, THREAD_COUNT);
+    vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    const int PARTITIONS = Utils::getPartations(hashbits);
+    Utils::print("THREADS: %d\n",threads);
+    Utils::print("HASH_BITS:  %d\n",hashbits);
+    Utils::print("PARTITIONS:  %d\n",PARTITIONS);
+    Utils::print("Algorithm: %s\n ",algo.c_str());
+    Utils::print("TUPLE COUNT: %d\n ",COUNT);
 
-    cout << "Life is a highway" << endl;
+    auto start = Utils::hp_clock::now();
+    if (algo == "parallel")
+    {
+        ParallelBuffer::run(&tuples, threads, hashbits, PARTITIONS);
+    } 
+    else if(algo == "concurrent")
+    {
+        concurrent_output(tuples, threads, hashbits, PARTITIONS);
+    }
+    auto end = Utils::hp_clock::now();
+    auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+    // Time result
+    // Utils::print("Time elapsed: %lld ms\n", diff);
+    cout << algo << "," << diff << "," << threads << "," << hashbits << endl;
     return 0;
 }
 
-void concurrent_output(vector<DataTuple> tuples)
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
 {
     pthread_t threads[THREAD_COUNT];
-    vector<DataTuple> buffer(COUNT);
+    vector<Buffer> buffers(PARTITIONS);
+
+    // Init our buffer
+    for (int i = 0; i < PARTITIONS; i++)
+    {
+        struct Buffer buffer;
+        buffer.tuples = new vector<DataTuple>((COUNT / PARTITIONS) * 1.2);
+        buffer.idx = new atomic<int>{0};
+        buffers[i] = buffer;
+    }
+
+    auto start = Utils::hp_clock::now();
     vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
 
     for (size_t i = 0; i < chunks->size(); i++)
     {
-        struct WorkerPayload payload;
-        payload.buffer = &buffer;
-        payload.chunks = &(chunks->at(i));
-        cout << "Spawning thread" << endl;
-        int rc = pthread_create(&threads[i], NULL, &partioning_worker, &payload);
+        struct WorkerPayload *payload = (WorkerPayload *)malloc(sizeof(struct WorkerPayload));
+        payload->buffer = &buffers;
+        payload->chunks = &(chunks->at(i));
+        payload->hash_bits = HASH_BITS;
+        int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
 
         if (rc)
         {
-            cout << "ERROR; return code from pthread_create() is " << rc << endl;
+            Utils::print("ERROR; return code from pthread_create() is %d\n", rc);
             break;
         }
     }
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
-        #ifdef METRICS
-        void *ret;
-        pthread_join(threads[i], &ret);
-        #else
         pthread_join(threads[i], NULL);
-        #endif
     }
+    
+    auto end = Utils::hp_clock::now();        
+    auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    Utils::print("Time elapsed without initialization: %lld ms\n", diff);
+
+    // printBinSize(buffers);
 }
 
 void *partioning_worker(void *arg)
 {
-    struct WorkerPayload *payload = (struct WorkerPayload *)arg;
+    WorkerPayload *payload = (WorkerPayload *)arg;
 
     for (auto tuple : *payload->chunks)
     {
         auto dataRef = &tuple;
         u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
-        pthread_mutex_lock(&my_lock);
         // Utils::print_hash(hash);
-        payload->buffer->push_back(*dataRef);
-        pthread_mutex_unlock(&my_lock);
+        // Compute hash bits as index
+        long long idx = Utils::hashBitsToIdx(hash, payload->hash_bits);
+        // cout << idx << endl;
+        // cout << "HASH idx: " << idx << endl;
+        Buffer buffer = (payload->buffer)->at(idx);
+        int newIdx = buffer.idx->fetch_add(1);
+        (*buffer.tuples)[newIdx] = tuple;
+
+        // Cleanup
         delete hash;
     }
     pthread_exit(NULL);
+}
+
+void printBinSize(vector<Buffer> buffers)
+{
+    int i = 0;
+    for (auto buf : buffers)
+    {
+        int count = 0;
+        for (auto tuple : *(buf.tuples))
+        {
+            if (tuple.first != 0)
+            {
+                count++;
+            }
+        }
+        cout << "Bin " << (i++) << " count: " << count << endl;
+    }
 }

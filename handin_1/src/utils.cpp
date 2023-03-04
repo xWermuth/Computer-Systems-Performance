@@ -5,10 +5,11 @@
 #include <vector>
 #include <set>
 #include "utils.h"
+#include <cmath>
+
 
 namespace Utils
 {
-
     /// @param bytes bytes to hash
     /// @param size the amount of bytes that @p `bytes` points to
     /// @return 32-byte sha256 hash
@@ -67,4 +68,17 @@ namespace Utils
 
         return my_tuples;
     }
+
+    int getPartations(int hashbites)
+    {
+        return pow(2.0, hashbites);
+    }
+
+    long long hashBitsToIdx(u_char* hash, int hashbits)
+    {
+        int *longerHash = (int *)hash;
+        long long mask = ((1ULL << (hashbits & 0x3F)) & -(hashbits != 64)) - 1;
+        return *longerHash & mask;
+    }
+
 }
