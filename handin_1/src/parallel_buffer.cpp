@@ -64,17 +64,15 @@ namespace ParallelBuffer
         cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
         const int partetions = Utils::getPartations(hashbits);
-        const int chunk_size = 1024;
-        const int chunks_in_part = COUNT / chunk_size; // 2^24 / 2^10 = 2^14 = 16384
+        const int chunk_size = (COUNT/partetions)/THREADS;
+        const int chunks_in_part = ((COUNT / partetions ) / chunk_size)*hashbits; // 2^24 / 2^10 = 2^14 = 16384
         printf("COUNT = %d, partetions = %d, chunk_size = %d, partition length = %d\n",
-               COUNT, partetions, chunk_size, partetions + (partetions >> 1));
+               COUNT, partetions, chunk_size, chunks_in_part);
 
         pthread_t threads[THREADS];
         vector<Partition> partation(partetions);
         for (auto &&p : partation)
         {
-            // .chunks = new vector<Chunk>(partetions + (partetions >> 1)),
-            //     
             p = {
                 .chunks = new vector<Chunk>(chunks_in_part),
                 .index = new atomic<int>{0}};
