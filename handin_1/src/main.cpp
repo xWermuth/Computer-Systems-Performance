@@ -26,7 +26,7 @@ struct WorkerPayload
     int hash_bits;
 };
 
-void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS);
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS);
 void *partioning_worker(void *arg);
 void printBinSize(vector<Buffer> buffers);
 
@@ -62,8 +62,10 @@ int main(int argc, char const *argv[])
 
 
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    const int PARTITIONS = Utils::getPartations(hashbits);
     cout << "THREADS: " << threads << endl;
     cout << "HASH_BITS: " << hashbits << endl;
+    cout << "PARTITIONS: " << PARTITIONS << endl;
     cout << "Algorithm: " << algo << endl;
     cout << "TUPLE COUNT: " << COUNT << endl;
 
@@ -71,28 +73,26 @@ int main(int argc, char const *argv[])
 
     if(algo == "parallel")
     {
-        ParallelBuffer::run(&tuples, threads, hashbits);
+        ParallelBuffer::run(&tuples, threads, hashbits, PARTITIONS);
     } else 
     {
-        concurrent_output(tuples, threads, hashbits);
+        concurrent_output(tuples, threads, hashbits, PARTITIONS);
     }
 
     cout << "Life is a highway" << endl;
     return 0;
 }
 
-void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS)
+void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
 {
-    int partetions = Utils::getPartations(HASH_BITS);
-    cout << "partetions: " << partetions << endl;
     pthread_t threads[THREAD_COUNT];
-    vector<Buffer> buffers(partetions);
+    vector<Buffer> buffers(PARTITIONS);
 
     // Init our buffer
-    for (int i = 0; i < partetions; i++)
+    for (int i = 0; i < PARTITIONS; i++)
     {
         struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>(COUNT / 4);
+        buffer.tuples = new vector<DataTuple>(COUNT / 2);
         buffer.idx = new atomic<int>{0};
         buffers[i] = buffer;
     }
@@ -104,7 +104,6 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
         struct WorkerPayload *payload = (WorkerPayload *)malloc(sizeof(struct WorkerPayload));
         payload->buffer = &buffers;
         payload->chunks = &(chunks->at(i));
-        cout << "Spawning thread: " << endl;
         int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
 
         if (rc)

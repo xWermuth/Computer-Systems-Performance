@@ -53,18 +53,16 @@ namespace ParallelBuffer
             cout << "Partation's " << i << " has " << chunks_full << "/" << p.chunks->size() << " chunks fill" << endl;
         }
     }
-    void run(vector<DataTuple> *data_tuples, int THREADS, int hashbits)
+    void run(vector<DataTuple> *data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
     {
         cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
-        const int partetions = Utils::getPartations(hashbits);
-        const int chunk_size = (COUNT / partetions) / THREADS;
-        const int chunks_in_part = ((COUNT / partetions) / chunk_size) * hashbits; // 2^24 / 2^10 = 2^14 = 16384
-        printf("COUNT = %d, partetions = %d, chunk_size = %d, partition length = %d\n",
-               COUNT, partetions, chunk_size, chunks_in_part);
+        const int chunk_size = (COUNT / PARTITIONS) / THREADS;
+        const int chunks_in_part = ((COUNT / PARTITIONS) / chunk_size) * hashbits; // 2^24 / 2^10 = 2^14 = 16384
+        printf("chunk_size = %d, partition length = %d\n", chunk_size, chunks_in_part);
 
         pthread_t threads[THREADS];
-        vector<Partition> partation(partetions);
+        vector<Partition> partation(PARTITIONS);
         for (auto &&p : partation)
         {
             p = {
@@ -84,7 +82,6 @@ namespace ParallelBuffer
             payload->chunk_size = chunk_size;
             args[i] = payload;
 
-            cout << "Spawning thread" << endl;
             int rc = pthread_create(&threads[i], NULL, buf_worker, payload);
 
             if (rc)
@@ -106,13 +103,10 @@ namespace ParallelBuffer
         // {
         //     free(args[i]);
         // }
-
-        cout << "Parallel partation finito" << endl;
     }
 
     void *buf_worker(void *arg)
     {
-        cout << "thread called" << endl;
         map<Partition *, Chunk *> chunk_map;
         Payload *payload = (Payload *)arg;
         thread::id threadId = this_thread::get_id();
