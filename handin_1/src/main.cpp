@@ -31,8 +31,8 @@ void printBinSize(vector<Buffer> buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
-#define COUNT 65536  // 2^24
-#define THREAD_COUNT 1 // 2 x AMD Opteron(tm) Processor 6386 SE
+#define COUNT 16777216  // 2^24
+#define THREAD_COUNT 32 // 2 x AMD Opteron(tm) Processor 6386 SE
 #define HASH_BITS 2
 typedef std::chrono::high_resolution_clock hp_clock;
 /******************************************* ACTUAL CODE *******************************************/

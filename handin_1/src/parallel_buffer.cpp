@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <thread>
 
 using namespace std;
 
@@ -34,22 +35,48 @@ struct Payload
 
 namespace ParallelBuffer
 {
+
+    void printBuffer(vector<Partition>& buffer, int chunk_size) 
+    {
+        for (size_t i = 0; i < buffer.size(); i++)
+        {
+            int chunks_full = 0;
+            cout << "Partition " << i << endl;
+            auto p = buffer[i];
+            for(auto c : *p.chunks)
+            {
+                // cout << "RIGHT before "<< endl;
+                if(c.dataTuples != nullptr){
+                    chunks_full += c.dataTuples->size() == chunk_size ? 1 : 0;
+                }
+            }
+            // for (vector<Chunk>::iterator c = p.chunks->begin(); c != p.chunks->end(); c++)
+            // {
+            //     cout << "RIGHT before "<< endl;
+            //     chunks_full += c->dataTuples->size() == chunk_size ? 1 : 0;
+            // }
+            cout << "Partation's " << i << " has " << chunks_full << "/" << p.chunks->size() << " chunks fill" << endl;
+        }
+
+    }
     void run(vector<DataTuple> *data_tuples, int THREADS, int hashbits)
     {
         cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
         const int partetions = Utils::getPartations(hashbits);
-        const int chunk_size = (COUNT / partetions) / partetions;
-        printf("COUNT = %d, partetions = %d, chunk_size = %d, partition length = %d\n", 
-            COUNT, partetions, chunk_size, partetions + (partetions >> 1));
+        const int chunk_size = 1024;
+        const int chunks_in_part = COUNT / chunk_size; // 2^24 / 2^10 = 2^14 = 16384
+        printf("COUNT = %d, partetions = %d, chunk_size = %d, partition length = %d\n",
+               COUNT, partetions, chunk_size, partetions + (partetions >> 1));
 
         pthread_t threads[THREADS];
         vector<Partition> partation(partetions);
         for (auto &&p : partation)
         {
-            cout << "HELlo" << endl;
+            // .chunks = new vector<Chunk>(partetions + (partetions >> 1)),
+            //     
             p = {
-                .chunks = new vector<Chunk>(partetions + (partetions >> 1)),
+                .chunks = new vector<Chunk>(chunks_in_part),
                 .index = new atomic<int>{0}};
         }
 
@@ -80,6 +107,8 @@ namespace ParallelBuffer
             pthread_join(threads[i], NULL);
         }
 
+        printBuffer(partation, chunk_size);
+
         // cleanup
         // for (size_t i = 0; i < THREADS; i++)
         // {
@@ -94,56 +123,48 @@ namespace ParallelBuffer
         cout << "thread called" << endl;
         map<Partition*, Chunk *> chunk_map;
         Payload *payload = (Payload *)arg;
+        thread::id threadId = this_thread::get_id();
         for (size_t i = 0; i < payload->chunks->size(); i++)
         {
             auto tuple = payload->chunks->at(i);
             u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
             long long hashIdx = Utils::hashBitsToIdx(hash, payload->hashbits);
 
-            cout << "hashIdx: " << hashIdx << endl;
             auto partation = payload->partation->at(hashIdx);
-            cout << "size of part: " << payload->partation->size(); 
-            cout << "SIZE: " << partation.chunks->size() << endl;
-            // cout << "AFTER____" << endl;
-            // cout << "AFTER____" << endl;
-            // auto temp = chunk_map.find(&partation);
-            // if(temp != chunk_map.end()) 
-            // {
-            //     // if(payload->chunk_size <= )
-            //     struct Chunk *chunk = temp->second;
-            //     auto tuples_in_chunk = chunk->dataTuples;
-            //     if(tuples_in_chunk->size() < payload->chunk_size)
-            //     {
-            //         cout << "BUFERE BUSHING "<<endl;
-            //         cout << "size:  " << tuples_in_chunk->size() <<endl;
-            //         tuples_in_chunk->push_back(tuple);
-            //         cout << "AFTER BUSHING "<<endl;
-            //     }
-            //     else
-            //     {
-            //         struct Chunk *new_chunk = new struct Chunk();
-            //         new_chunk->dataTuples = new vector<DataTuple>{tuple};
-            //         cout << "BUFERE inserting "<<endl;
-            //         chunk_map[&partation] = new_chunk;
-            //         cout << "AFTER inserting "<<endl;
-            //     }
-            // } 
-            // else 
-            // {
-                // int partIdx = partation.index->fetch_add(1);
+            auto temp = chunk_map.find(&partation);
+            if(temp != chunk_map.end()) 
+            {
+                struct Chunk *chunk = temp->second;
+                auto tuples_in_chunk = chunk->dataTuples;
+                if(tuples_in_chunk->size() < payload->chunk_size)
+                {
+                    // cout << "THREAD: " << threadId << " - INSERTING IN OUR ASSIGNED CHUNK" << endl;
+                    tuples_in_chunk->push_back(tuple);
+                }
+                else
+                {
+                    struct Chunk *new_chunk = new struct Chunk();
+                    new_chunk->dataTuples = new vector<DataTuple>{tuple};
+                    chunk_map[&partation] = new_chunk;
+                    int partIdx = partation.index->fetch_add(1);
+                    // cout << "THREAD: " << threadId << " - CHUNK IS FULL -> GETTING NEW CHUNK AT: " << partIdx << endl;
+                    (*partation.chunks)[partIdx] = *new_chunk;
+                }
+            } 
+            else 
+            {
+                int partIdx = partation.index->fetch_add(1);
+                // cout << "THREAD: " << threadId << " - GETTING NEW CHUNK AT: " << partIdx << endl;
                 // Create chunk
-                // struct Chunk *new_chunk = new struct Chunk();
-                // new_chunk->dataTuples = new vector<DataTuple>(payload->chunk_size);
-                // cout << "partIdx: " << partIdx << endl;
-                // (*partation.chunks)[partIdx] = *new_chunk;
-                
-                // chunk_map[&partation] = new_chunk;
-            // }
+                struct Chunk *new_chunk = new struct Chunk();
+                new_chunk->dataTuples = new vector<DataTuple>(payload->chunk_size);
+                (*partation.chunks)[partIdx] = *new_chunk;
+                chunk_map[&partation] = new_chunk;
+            }
 
             delete hash;
         }
 
         pthread_exit(NULL);
     }
-
 }
