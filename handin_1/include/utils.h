@@ -1,6 +1,7 @@
 #include <vector>
 #include <sys/types.h>
 #include <stdio.h>
+#include <chrono>
 
 typedef std::pair<uint64_t, uint64_t> DataTuple;
 
