@@ -80,4 +80,5 @@ namespace Utils
         long long mask = ((1ULL << (hashbits & 0x3F)) & -(hashbits != 64)) - 1;
         return *longerHash & mask;
     }
+
 }

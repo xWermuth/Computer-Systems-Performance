@@ -56,25 +56,15 @@ namespace ParallelBuffer
             // cout << "Partation's " << i << " has " << chunks_full << "/" << p.chunks->size() << " chunks fill" << endl;
         }
 
-        cout << "Total should be " << 16777216 << endl;
-        cout << "Total collected tuples are " << sum << endl;
+        Utils::print("Total should be %d\n", 16777216);
+        Utils::print("Total collected tuples are %d\n", sum);
     }
     void run(vector<DataTuple> *data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
     {
-        cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
         const int chunk_size = 16384;
-        // int count_exp = 24;
-        // int part_exp = log2(PARTITIONS);
-        // int chunk_exp = count_exp - part_exp;
-        // int chunk_size = 1 << chunk_exp;
         const int chunks_in_part = max((COUNT / PARTITIONS) / chunk_size, 1); // 2^24 / 2^10 = 2^14 = 16384
-        cout << COUNT << endl;
-        cout << PARTITIONS << endl;
-        cout << (COUNT / PARTITIONS) << endl;
-        cout << (COUNT / PARTITIONS) / chunk_size << endl;
-        cout << chunks_in_part << endl;
-        printf("chunk_size = %d, partition length = %d\n", chunk_size, chunks_in_part);
+        Utils::print("chunk_size %d, partition length = %d\n", chunk_size, chunks_in_part);
 
         if (pthread_mutex_init(&my_lock, NULL) != 0)
         {
@@ -109,7 +99,7 @@ namespace ParallelBuffer
 
             if (rc)
             {
-                cout << "ERROR; return code from pthread_create() is " << rc << endl;
+                Utils::print("ERROR; return code from pthread_create() is %d\n", rc);
                 break;
             }
         }
@@ -122,8 +112,7 @@ namespace ParallelBuffer
         auto end = Utils::hp_clock::now();
         auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-        cout << "INSIDE Time elapsed: " << diff << " ms" << endl;
-
+        Utils::print("Time elapsed without initialization: %lld ms \n", diff);
         printBuffer(partation, chunk_size);
 
         // cleanup

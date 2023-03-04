@@ -57,29 +57,36 @@ int main(int argc, char const *argv[])
         {
             algo = string(argv[i + 1]);
         }
+        else if(arg == "-q")
+        {
+            Utils::quiet = true;
+        }
     }
 
 
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
     const int PARTITIONS = Utils::getPartations(hashbits);
-    cout << "THREADS: " << threads << endl;
-    cout << "HASH_BITS: " << hashbits << endl;
-    cout << "PARTITIONS: " << PARTITIONS << endl;
-    cout << "Algorithm: " << algo << endl;
-    cout << "TUPLE COUNT: " << COUNT << endl;
+    Utils::print("THREADS: %d\n",threads);
+    Utils::print("HASH_BITS:  %d\n",hashbits);
+    Utils::print("PARTITIONS:  %d\n",PARTITIONS);
+    Utils::print("Algorithm: %s\n ",algo.c_str());
+    Utils::print("TUPLE COUNT: %d\n ",COUNT);
 
     auto start = Utils::hp_clock::now();
     if (algo == "parallel")
     {
         ParallelBuffer::run(&tuples, threads, hashbits, PARTITIONS);
-    } else 
+    } 
+    else if(algo == "concurrent")
     {
         concurrent_output(tuples, threads, hashbits, PARTITIONS);
     }
     auto end = Utils::hp_clock::now();
     auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-    cout << "Time elapsed: " << diff << " ms" << endl;
+    // Time result
+    // Utils::print("Time elapsed: %lld ms\n", diff);
+    cout << algo << "," << diff << "," << threads << "," << hashbits << endl;
     return 0;
 }
 
@@ -110,24 +117,19 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
 
         if (rc)
         {
-            cout << "ERROR; return code from pthread_create() is " << rc << endl;
+            Utils::print("ERROR; return code from pthread_create() is %d\n", rc);
             break;
         }
     }
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
-#ifdef METRICS
-        void *ret;
-        pthread_join(threads[i], &ret);
-#else
         pthread_join(threads[i], NULL);
-#endif
     }
     
     auto end = Utils::hp_clock::now();        
     auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-    cout << "INSIDE CONC Time elapsed: " << diff << " ms" << endl;
+    Utils::print("Time elapsed without initialization: %lld ms\n", diff);
 
     // printBinSize(buffers);
 }

@@ -1,5 +1,6 @@
 #include <vector>
 #include <sys/types.h>
+#include <stdio.h>
 
 typedef std::pair<uint64_t, uint64_t> DataTuple;
 
@@ -32,6 +33,7 @@ namespace Utils
         return outVec;
     }
 
+    inline bool quiet = false;
     std::vector<DataTuple> gen_tuples(int);
     u_char *_sha256(u_char *bytes, size_t size);
     u_char *sha256(u_char *bytes, size_t size);
@@ -39,4 +41,12 @@ namespace Utils
     int getPartations(int hashbites);
     void print_hash(u_char *hash);
     long long hashBitsToIdx(u_char *hash, int hashbits);
+    
+    template<typename... Args> 
+    inline void print(const char * fmt, Args... args)
+    {
+        if(quiet)
+            return;
+        printf(fmt, args...);
+    }
 }
