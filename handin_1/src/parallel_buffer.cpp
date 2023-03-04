@@ -18,7 +18,7 @@ struct Chunk
     vector<DataTuple> *dataTuples;
 };
 
-struct Partition 
+struct Partition
 {
     atomic<int> *index;
     vector<Chunk> *chunks;
@@ -36,36 +36,30 @@ struct Payload
 namespace ParallelBuffer
 {
 
-    void printBuffer(vector<Partition>& buffer, int chunk_size) 
+    void printBuffer(vector<Partition> &buffer, int chunk_size)
     {
         for (size_t i = 0; i < buffer.size(); i++)
         {
             int chunks_full = 0;
             cout << "Partition " << i << endl;
             auto p = buffer[i];
-            for(auto c : *p.chunks)
+            for (auto c : *p.chunks)
             {
-                // cout << "RIGHT before "<< endl;
-                if(c.dataTuples != nullptr){
+                if (c.dataTuples != nullptr)
+                {
                     chunks_full += c.dataTuples->size() == chunk_size ? 1 : 0;
                 }
             }
-            // for (vector<Chunk>::iterator c = p.chunks->begin(); c != p.chunks->end(); c++)
-            // {
-            //     cout << "RIGHT before "<< endl;
-            //     chunks_full += c->dataTuples->size() == chunk_size ? 1 : 0;
-            // }
             cout << "Partation's " << i << " has " << chunks_full << "/" << p.chunks->size() << " chunks fill" << endl;
         }
-
     }
     void run(vector<DataTuple> *data_tuples, int THREADS, int hashbits)
     {
         cout << "ParallelBuffer roll out " << endl;
         const int COUNT = data_tuples->size();
         const int partetions = Utils::getPartations(hashbits);
-        const int chunk_size = (COUNT/partetions)/THREADS;
-        const int chunks_in_part = ((COUNT / partetions ) / chunk_size)*hashbits; // 2^24 / 2^10 = 2^14 = 16384
+        const int chunk_size = (COUNT / partetions) / THREADS;
+        const int chunks_in_part = ((COUNT / partetions) / chunk_size) * hashbits; // 2^24 / 2^10 = 2^14 = 16384
         printf("COUNT = %d, partetions = %d, chunk_size = %d, partition length = %d\n",
                COUNT, partetions, chunk_size, chunks_in_part);
 
@@ -83,7 +77,7 @@ namespace ParallelBuffer
 
         for (size_t i = 0; i < chunks->size(); i++)
         {
-            struct Payload *payload = (Payload *) malloc(sizeof(struct Payload));
+            struct Payload *payload = (Payload *)malloc(sizeof(struct Payload));
             payload->partation = &partation;
             payload->chunks = &(chunks->at(i));
             payload->hashbits = hashbits;
@@ -119,7 +113,7 @@ namespace ParallelBuffer
     void *buf_worker(void *arg)
     {
         cout << "thread called" << endl;
-        map<Partition*, Chunk *> chunk_map;
+        map<Partition *, Chunk *> chunk_map;
         Payload *payload = (Payload *)arg;
         thread::id threadId = this_thread::get_id();
         for (size_t i = 0; i < payload->chunks->size(); i++)
@@ -130,11 +124,11 @@ namespace ParallelBuffer
 
             auto partation = payload->partation->at(hashIdx);
             auto temp = chunk_map.find(&partation);
-            if(temp != chunk_map.end()) 
+            if (temp != chunk_map.end())
             {
                 struct Chunk *chunk = temp->second;
                 auto tuples_in_chunk = chunk->dataTuples;
-                if(tuples_in_chunk->size() < payload->chunk_size)
+                if (tuples_in_chunk->size() < payload->chunk_size)
                 {
                     // cout << "THREAD: " << threadId << " - INSERTING IN OUR ASSIGNED CHUNK" << endl;
                     tuples_in_chunk->push_back(tuple);
@@ -148,8 +142,8 @@ namespace ParallelBuffer
                     // cout << "THREAD: " << threadId << " - CHUNK IS FULL -> GETTING NEW CHUNK AT: " << partIdx << endl;
                     (*partation.chunks)[partIdx] = *new_chunk;
                 }
-            } 
-            else 
+            }
+            else
             {
                 int partIdx = partation.index->fetch_add(1);
                 // cout << "THREAD: " << threadId << " - GETTING NEW CHUNK AT: " << partIdx << endl;

@@ -39,12 +39,36 @@ typedef std::chrono::high_resolution_clock hp_clock;
 
 int main(int argc, char const *argv[])
 {
-    uint64_t x = 0x427c3c55l;
-    char *str = (char *)&x;
-    u_char *hashed = Utils::sha256((u_char *)str, 12);
     cout << "THREADS: " << THREAD_COUNT << endl;
     cout << "HASH_BITS: " << HASH_BITS << endl;
     cout << "TUPLE COUNT: " << COUNT << endl;
+
+    // ./handin_1 -t 4 -h 8 -a parallel
+    int threads;
+    int hashbits;
+    string algo;
+    for (size_t i = 1; i < argc; i++)
+    {
+        string const arg = argv[i];
+        switch (arg)
+        {
+        case "-t":
+            threads = 1;
+            break;
+
+        case "-h":
+            hashbits = 1;
+            break;
+
+        case "-a":
+            algo = "";
+            break;
+        default:
+            break;
+        }
+    }
+    
+
     /******************************************* CON BUFFER *******************************************/
 
     // vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
