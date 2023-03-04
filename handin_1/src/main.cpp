@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "utils.h"
 #include "parallel_buffer.h"
+#include <atomic>
 
 using namespace std;
 
