@@ -41,10 +41,10 @@ do
         do
             foldername="$algo-$t-$h"
             mkdir -p "$foldername"
-            printf "\tThreads %d hashbits %d" "$t" "$h" >> $outFile
+            printf "\tThreads %d hashbits %d\n" "$t" "$h" >> $outFile
             for r in {1..10}
             do
-                printf "\t\tIter %d" "$r" >> $outFile
+                printf "\t\tIter %d\n" "$r" >> $outFile
                 rm -f perf.data perf.data.txt
                 perf record -e $events -o perf.data ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
                 perf script -i perf.data > perf.data.txt
