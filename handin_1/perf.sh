@@ -2,7 +2,7 @@
 
 # screen -S perf_data_script ./perf.sh
 
-outFile="out.log"
+outFile="out.perf.log"
 
 rm -f $outFile
 echo "algo,ms,t,h" > $outFile
@@ -34,15 +34,17 @@ cd .. || exit
 
 for algo in $algos
 do
-    echo "Measuring $algo algorithm"
+    echo "Measuring $algo algorithm" >> $outFile
     for h in {1..18}
     do
         for t in $threads;
         do
             foldername="$algo-$t-$h"
             mkdir -p "$foldername"
+            printf "\tThreads %d hashbits %d" "$t" "$h" >> $outFile
             for r in {1..10}
             do
+                printf "\t\tIter %d" "$r" >> $outFile
                 rm -f perf.data perf.data.txt
                 perf record -e $events -o perf.data ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
                 perf script -i perf.data > perf.data.txt
