@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# screen -S perf_data_script ./perf.sh
+
 outFile="out.log"
 
 rm -f $outFile
@@ -39,12 +41,12 @@ do
         do
             foldername="$algo-$t-$h"
             mkdir -p "$foldername"
-            for _ in {1..10}
+            for r in {1..10}
             do
                 rm -f perf.data perf.data.txt
                 perf record -e $events -o perf.data ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
                 perf script -i perf.data > perf.data.txt
-                perf report |& tee "./$foldername/report.txt"
+                perf report |& tee "./$foldername/report-$r.txt"
                 if [ $? -ne 0 ];
                 then
                     echo "Non-zero exit code with params '-t $t -h $h -a $algo -q'" >> $outFile
