@@ -31,8 +31,8 @@ struct WorkerPayload
 };
 
 void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS);
-void partioning_worker(vector<DataTuple> &tuples, vector<Buffer> &buffers, int start, int end, int hash_bits);
-void printBinSize(vector<Buffer> buffers);
+void partioning_worker(vector<DataTuple> &tuples, vector<vector<DataTuple> > &buffers, vector<atomic_int> &aIdx, int start, int end, int hash_bits);
+void printBinSize(vector<vector<DataTuple> > &buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
 
@@ -97,16 +97,8 @@ int main(int argc, char const *argv[])
 void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
 {
     thread threads[THREAD_COUNT];
-    vector<Buffer> buffers(PARTITIONS);
-
-    // Init our buffer
-    for (int i = 0; i < PARTITIONS; i++)
-    {
-        struct Buffer buffer;
-        buffer.tuples = new vector<DataTuple>((COUNT / PARTITIONS) * 1.2);
-        buffer.idx = new atomic<int>{0};
-        buffers[i] = buffer;
-    }
+    vector<vector<DataTuple> > buffers(PARTITIONS, vector<DataTuple>((COUNT / PARTITIONS) * 1.2));
+    vector<atomic<int>> aIdx(PARTITIONS);
 
     auto start = Utils::hp_clock::now();
     size_t chunk = tuples.size() / THREAD_COUNT;
@@ -114,7 +106,7 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
         int start = i * chunk;
-        threads[i] = thread(partioning_worker, ref(tuples), ref(buffers), start, start + chunk, HASH_BITS);
+        threads[i] = thread(partioning_worker, ref(tuples), ref(buffers), ref(aIdx), start, start + chunk, HASH_BITS);
     }
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
@@ -129,29 +121,28 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
     // printBinSize(buffers);
 }
 
-void partioning_worker(vector<DataTuple> &tuples, vector<Buffer> &buffers, int start, int end, int hash_bits)
+void partioning_worker(vector<DataTuple> &tuples, vector<vector<DataTuple> > &buffers, vector<atomic_int> &aIdx, int start, int end, int hash_bits)
 {
     for(int i = start; i < end; i++)
     {
         auto tuple = tuples[i];
         u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
         long long idx = Utils::hashBitsToIdx(hash, hash_bits);
-        Buffer buffer = buffers.at(idx);
-        int newIdx = buffer.idx->fetch_add(1);
-        (*buffer.tuples)[newIdx] = tuple;
+        int newIdx = aIdx[idx].fetch_add(1);
+        buffers[idx][newIdx] = tuple;
 
         // Cleanup
-        // delete hash;
+        delete hash;
     }
 }
 
-void printBinSize(vector<Buffer> buffers)
+void printBinSize(vector<vector<DataTuple> > &buffers)
 {
     int i = 0;
     for (auto buf : buffers)
     {
         int count = 0;
-        for (auto tuple : *(buf.tuples))
+        for (auto tuple : buf)
         {
             if (tuple.first != 0)
             {
