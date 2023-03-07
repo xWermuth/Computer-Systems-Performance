@@ -2,4 +2,4 @@
 cd ./build || exit
 cmake ..
 make
-./handin_1 -t 32 -h 14 -a parallel
+./handin_1 -t 32 -h 1 -a concurrent

@@ -126,13 +126,9 @@ void partioning_worker(vector<DataTuple> &tuples, vector<vector<DataTuple> > &bu
     for(int i = start; i < end; i++)
     {
         auto tuple = tuples[i];
-        u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
-        long long idx = Utils::hashBitsToIdx(hash, hash_bits);
-        int newIdx = aIdx[idx].fetch_add(1);
-        buffers[idx][newIdx] = tuple;
-
-        // Cleanup
-        delete hash;
+        int hashIdx = tuple.second % buffers.capacity();
+        int newIdx = aIdx[hashIdx].fetch_add(1);
+        buffers[hashIdx][newIdx] = tuple;
     }
 }
 

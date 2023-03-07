@@ -48,9 +48,8 @@ namespace ParallelBuffer
         for (size_t i = start; i < end; i++)
         {
             auto tuple = tuples[i];
-            u_char *hash = Utils::sha256(tuple.second, hash_size);
-            long long hashIdx = Utils::hashBitsToIdx(hash, hash_bits);
 
+            int hashIdx = tuple.second % buffers.capacity();
             Partition partation = buffers[hashIdx];
             Chunk *chunk = chunk_map[&partation];
             int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
@@ -65,14 +64,8 @@ namespace ParallelBuffer
                 (*new_chunk).push_back(tuple);
                 partation.push_back(*new_chunk);
                 chunk_map[&partation] = new_chunk;
-                // Chunk new_chunk(chunk_size);
-                // chunk_map[&partation] = &new_chunk;
-                // partation.push_back(new_chunk);
                 (*mutexes)[hashIdx].unlock();
-                // cout << start << " - UNLOCKING " << endl;
             }
-
-            delete[] hash;
         }
     }
 
