@@ -2,4 +2,4 @@
 cd ./build || exit
 cmake ..
 make
-./handin_1 -t 1 -h 1 -a parallel
+./handin_1 -t 16 -h 8 -a parallel

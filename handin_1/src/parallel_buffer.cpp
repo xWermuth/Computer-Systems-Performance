@@ -25,11 +25,6 @@ namespace ParallelBuffer
         {
             int chunks_full = 0;
             // cout << "Partition " << i << ", s: " << buffer->size() << endl;
-            for (size_t j = 0; j < buffer->at(i)->size(); j++)
-            {
-                cout << i << "," << j << " - " << buffer->at(i)->at(j)->size() << endl;
-                /* code */
-            }
             
             for (auto c : *buffer->at(i))
             {
@@ -50,17 +45,16 @@ namespace ParallelBuffer
 
     void buf_worker(vector<DataTuple> & tuples, Buffers buffers, std::vector<std::mutex> *mutexes, int start, int end, int hash_bits, int chunk_size)
     {
-        unordered_map<vector<Chunk>*, vector<DataTuple>*> chunk_map;
+        unordered_map<Partition, Chunk> chunk_map;
         auto hash_size = sizeof(uint64_t);
-        uint32_t count = 0;
+
         for (size_t i = start; i < end; i++)
         {
-            count++;
             auto tuple = tuples[i];
 
             int hashIdx = tuple.second % buffers->capacity();
-            vector<Chunk>* partation = buffers->at(hashIdx);
-            vector<DataTuple>* chunk = chunk_map[partation];
+            Partition partation = buffers->at(hashIdx);
+            Chunk chunk = chunk_map[partation];
             int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
             if (curr_chunk_size < chunk_size)
             {
@@ -71,14 +65,13 @@ namespace ParallelBuffer
                 // (*mutexes)[hashIdx].lock();
                 mutex *l = &(*mutexes)[hashIdx];
                 l->lock();
-                vector<DataTuple>* new_chunk = new vector<DataTuple>();
+                Chunk new_chunk = new vector<DataTuple>();
                 new_chunk->push_back(tuple);
                 partation->push_back(new_chunk);
                 chunk_map[partation] = new_chunk;
                 l->unlock();
             }
         }
-        Utils::print("this count: %u\n", count);
     }
 
     void run(vector<DataTuple> &data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
