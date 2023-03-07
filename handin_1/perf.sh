@@ -8,6 +8,14 @@ rm -f $outFile
 echo "algo,ms,t,h" > $outFile
 events="context-switches,cpu-migrations,cycles,instructions,cache-references,cache-misses"
 
+
+delay="2500"
+
+if [[ $OSTYPE == "linux-gnu" ]];
+then
+    delay="8000"
+fi
+
 Green='\033[0;32m' 
 
 threads="1
@@ -46,7 +54,7 @@ do
             do
                 printf "\t\tIter %d\n" "$r" >> $outFile
                 rm -f perf.data perf.data.txt
-                perf record -e $events -o perf.data ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
+                perf record -e $events -o perf.data -D $delay ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
                 perf script -i perf.data > perf.data.txt
                 perf report |& tee "./$foldername/report-$r.txt"
                 if [ $? -ne 0 ];

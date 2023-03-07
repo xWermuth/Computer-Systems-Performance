@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "parallel_buffer.h"
 #include <atomic>
+#include <thread>
 
 using namespace std;
 
@@ -40,7 +41,6 @@ void printBinSize(vector<Buffer> buffers);
 
 int main(int argc, char const *argv[])
 {
-    // ./handin_1 -t 4 -h 8 -a parallel
     int threads;
     int hashbits;
     string algo;
@@ -64,8 +64,21 @@ int main(int argc, char const *argv[])
         }
     }
 
-
+    
+    // This allows us to set an upper limit for the time it takes to generate tuples
+    // in order to measure execution time with perf instead of hp_clock();
+    uint64_t tuple_gen_perf_wait;
+    #if PERF_TIMEOUT_SERVER
+    tuple_gen_perf_wait = 8000;
+    #else
+    tuple_gen_perf_wait = 2500;
+    #endif
+    Utils::print("tuple_gen_perf_wait: %llu\n", tuple_gen_perf_wait);
+    auto wait_handle = Utils::sleep_for_x(tuple_gen_perf_wait);
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    wait_handle.join();
+    
+
     const int PARTITIONS = Utils::getPartations(hashbits);
     Utils::print("THREADS: %d\n",threads);
     Utils::print("HASH_BITS:  %d\n",hashbits);

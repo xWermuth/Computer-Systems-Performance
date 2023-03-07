@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <chrono>
+#include <thread>
 
 typedef std::pair<uint64_t, uint64_t> DataTuple;
 
@@ -42,8 +43,9 @@ namespace Utils
     int getPartations(int hashbites);
     void print_hash(u_char *hash);
     long long hashBitsToIdx(u_char *hash, int hashbits);
-    
-    template<typename... Args> 
+    std::thread sleep_for_x(const uint64_t ms);
+
+    template<typename... Args>
     inline void print(const char * fmt, Args... args)
     {
         if(quiet)
