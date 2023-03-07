@@ -6,7 +6,8 @@
 #include <set>
 #include "utils.h"
 #include <cmath>
-
+#include <chrono>
+#include <thread>         // std::thread
 
 namespace Utils
 {
@@ -81,4 +82,14 @@ namespace Utils
         return *longerHash & mask;
     }
 
+    /// @brief spawns a thread which sleeps for \p `ms` milliseconds
+    /// @param ms 
+    /// @return thread which exists after \p `ms` milliseconds
+    std::thread sleep_for_x(const uint64_t ms)
+    {
+        return std::thread([=]()
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        });
+    }
 }
