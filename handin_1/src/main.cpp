@@ -97,7 +97,7 @@ int main(int argc, char const *argv[])
 void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
 {
     thread threads[THREAD_COUNT];
-    vector<vector<DataTuple> > buffers(PARTITIONS, vector<DataTuple>((COUNT / PARTITIONS) * 1.2));
+    vector<vector<DataTuple> > buffers(PARTITIONS, vector<DataTuple>((COUNT / PARTITIONS) * 1.5));
     vector<atomic<int>> aIdx(PARTITIONS);
 
     auto start = Utils::hp_clock::now();
