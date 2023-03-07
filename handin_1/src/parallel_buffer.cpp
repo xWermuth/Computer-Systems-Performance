@@ -44,6 +44,7 @@ namespace ParallelBuffer
     {
         unordered_map<Partition *, Chunk *> chunk_map;
         auto hash_size = sizeof(uint64_t);
+
         for (size_t i = start; i < end; i++)
         {
             auto tuple = tuples[i];
@@ -52,23 +53,25 @@ namespace ParallelBuffer
 
             Partition partation = buffers[hashIdx];
             Chunk *chunk = chunk_map[&partation];
-            if (chunk != nullptr && chunk->size() < chunk_size)
+            int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
+            if (curr_chunk_size < chunk_size)
             {
-                // cout << "THREAD: " << threadId << " - INSERTING IN OUR ASSIGNED CHUNK" << endl;
-                (*chunk)[chunk->size() + 1] = tuple;
-
+                (*chunk).push_back(tuple);
             }
             else
             {
                 (*mutexes)[hashIdx].lock();
-                Chunk new_chunk(chunk_size);
-                new_chunk[0] = tuple;
-                chunk_map[&partation] = &new_chunk;
-                partation.push_back(new_chunk);
-                // cout << "THREAD: " << threadId << " - CHUNK IS FULL -> GETTING NEW CHUNK AT: " << partIdx << endl;
+                Chunk *new_chunk = new Chunk();
+                (*new_chunk).push_back(tuple);
+                partation.push_back(*new_chunk);
+                chunk_map[&partation] = new_chunk;
+                // Chunk new_chunk(chunk_size);
+                // chunk_map[&partation] = &new_chunk;
+                // partation.push_back(new_chunk);
                 (*mutexes)[hashIdx].unlock();
-                
+                // cout << start << " - UNLOCKING " << endl;
             }
+
             delete[] hash;
         }
     }
