@@ -18,20 +18,28 @@ using namespace std;
 
 namespace ParallelBuffer
 {
-    void printBuffer(Buffers &buffer, int chunk_size)
+    void printBuffer(Buffers buffer, int chunk_size)
     {
         uint32_t sum = 0;
-        for (size_t i = 0; i < buffer.size(); i++)
+        for (size_t i = 0; i < buffer->size(); i++)
         {
             int chunks_full = 0;
-            cout << "Partition " << i << endl;
-            for (auto c : buffer[i])
+            // cout << "Partition " << i << ", s: " << buffer->size() << endl;
+            for (size_t j = 0; j < buffer->at(i)->size(); j++)
             {
+                cout << i << "," << j << " - " << buffer->at(i)->at(j)->size() << endl;
+                /* code */
+            }
+            
+            for (auto c : *buffer->at(i))
+            {
+                // cout << "c: " << c << endl;
                 // if (c != nullptr)
                 // {
-                    sum += c.size();
-                    chunks_full += c.size() == chunk_size ? 1 : 0;
+                    sum += c->size();
+                    chunks_full += c->size() == chunk_size ? 1 : 0;
                 // }
+                // cout << "1" << endl;
             }
             // cout << "Partation's " << i << " has " << chunks_full << "/" << p.chunks->size() << " chunks fill" << endl;
         }
@@ -40,33 +48,37 @@ namespace ParallelBuffer
         Utils::print("Total collected tuples are %d\n", sum);
     }
 
-    void buf_worker(vector<DataTuple> &tuples, Buffers &buffers, vector<mutex> *mutexes, int start, int end, int hash_bits, int chunk_size)
+    void buf_worker(vector<DataTuple> & tuples, Buffers buffers, std::vector<std::mutex> *mutexes, int start, int end, int hash_bits, int chunk_size)
     {
-        unordered_map<Partition *, Chunk *> chunk_map;
+        unordered_map<vector<Chunk>*, vector<DataTuple>*> chunk_map;
         auto hash_size = sizeof(uint64_t);
-
+        uint32_t count = 0;
         for (size_t i = start; i < end; i++)
         {
+            count++;
             auto tuple = tuples[i];
 
-            int hashIdx = tuple.second % buffers.capacity();
-            Partition *partation = &buffers[hashIdx];
-            Chunk *chunk = chunk_map[partation];
+            int hashIdx = tuple.second % buffers->capacity();
+            vector<Chunk>* partation = buffers->at(hashIdx);
+            vector<DataTuple>* chunk = chunk_map[partation];
             int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
             if (curr_chunk_size < chunk_size)
             {
-                (*chunk).push_back(tuple);
+                chunk->push_back(tuple);
             }
             else
             {
-                (*mutexes)[hashIdx].lock();
-                Chunk *new_chunk = new Chunk();
-                (*new_chunk).push_back(tuple);
-                partation->push_back(*new_chunk);
+                // (*mutexes)[hashIdx].lock();
+                mutex *l = &(*mutexes)[hashIdx];
+                l->lock();
+                vector<DataTuple>* new_chunk = new vector<DataTuple>();
+                new_chunk->push_back(tuple);
+                partation->push_back(new_chunk);
                 chunk_map[partation] = new_chunk;
-                (*mutexes)[hashIdx].unlock();
+                l->unlock();
             }
         }
+        Utils::print("this count: %u\n", count);
     }
 
     void run(vector<DataTuple> &data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
@@ -77,9 +89,13 @@ namespace ParallelBuffer
         Utils::print("chunk_size %d, partition length = %d\n", chunk_size, chunks_in_part);
 
         thread my_threads[THREADS];
-        Buffers buffers(PARTITIONS, Partition(chunks_in_part));
-        vector<mutex> *mutexes = new vector<mutex>(PARTITIONS);
+        Buffers buffers = new vector<Partition>();
+        for (size_t i = 0; i < PARTITIONS; i++)
+        {
+            buffers->push_back(new vector<Chunk>());
+        }
 
+        vector<mutex> *mutexes = new vector<mutex>(PARTITIONS);
 
         auto start = Utils::hp_clock::now();
 
@@ -88,7 +104,7 @@ namespace ParallelBuffer
         for (size_t i = 0; i < THREADS; i++)
         {
             int start = i * chunk;
-            my_threads[i] = thread(buf_worker, ref(data_tuples), ref(buffers), mutexes, start, start + chunk, hashbits, chunk_size);
+            my_threads[i] = thread(buf_worker, ref(data_tuples), buffers, mutexes, start, start + chunk, hashbits, chunk_size);
         }
 
         for (size_t i = 0; i < THREADS; i++)

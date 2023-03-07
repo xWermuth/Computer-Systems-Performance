@@ -66,6 +66,7 @@ namespace Utils
             my_tuples[i] = std::make_pair(key, (((uint64_t)rand()) << 32) | rand());
         }
 
+        std::cout << "n is " << n << " but my_tuples is " << my_tuples.size() << std::endl;
         return my_tuples;
     }
 
