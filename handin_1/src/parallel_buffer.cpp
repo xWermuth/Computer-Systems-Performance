@@ -50,8 +50,8 @@ namespace ParallelBuffer
             auto tuple = tuples[i];
 
             int hashIdx = tuple.second % buffers.capacity();
-            Partition partation = buffers[hashIdx];
-            Chunk *chunk = chunk_map[&partation];
+            Partition *partation = &buffers[hashIdx];
+            Chunk *chunk = chunk_map[partation];
             int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
             if (curr_chunk_size < chunk_size)
             {
@@ -62,8 +62,8 @@ namespace ParallelBuffer
                 (*mutexes)[hashIdx].lock();
                 Chunk *new_chunk = new Chunk();
                 (*new_chunk).push_back(tuple);
-                partation.push_back(*new_chunk);
-                chunk_map[&partation] = new_chunk;
+                partation->push_back(*new_chunk);
+                chunk_map[partation] = new_chunk;
                 (*mutexes)[hashIdx].unlock();
             }
         }
@@ -100,6 +100,6 @@ namespace ParallelBuffer
         auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
         Utils::print("Time elapsed without initialization: %lld ms \n", diff);
-        // printBuffer(buffers, chunk_size);
+        printBuffer(buffers, chunk_size);
     }
 }
