@@ -4,6 +4,8 @@
 
 outFile="out.perf.log"
 
+datetime=$(date --iso-8601=seconds)
+
 rm -f $outFile
 echo "algo,ms,t,h" > $outFile
 events="context-switches,cpu-migrations,cycles,instructions,cache-references,cache-misses"
@@ -47,7 +49,7 @@ do
     do
         for t in $threads;
         do
-            foldername="$algo-$t-$h"
+            foldername="$datetime/$algo-$t-$h"
             mkdir -p "$foldername"
             printf "\tThreads %d hashbits %d\n" "$t" "$h" >> $outFile
             for r in {1..10}
