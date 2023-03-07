@@ -40,6 +40,11 @@ void printBinSize(vector<Buffer> buffers);
 
 int main(int argc, char const *argv[])
 {
+    auto s = Utils::hp_clock::now();
+    vector<DataTuple> t = Utils::gen_tuples(COUNT);
+    auto e = Utils::hp_clock::now();
+    Utils::print("gen_tuples took %d ms\n", chrono::duration_cast<chrono::milliseconds>(e - s));
+    return 0;
     // ./handin_1 -t 4 -h 8 -a parallel
     int threads;
     int hashbits;
