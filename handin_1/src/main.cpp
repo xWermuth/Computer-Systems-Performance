@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "parallel_buffer.h"
 #include <atomic>
+#include <thread>
 
 using namespace std;
 
@@ -23,12 +24,14 @@ struct Buffer
 struct WorkerPayload
 {
     vector<Buffer> *buffer;
-    vector<DataTuple> *chunks;
+    vector<DataTuple> *tuples;
+    int start;
+    int end;
     int hash_bits;
 };
 
 void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS);
-void *partioning_worker(void *arg);
+void partioning_worker(vector<DataTuple> &tuples, vector<Buffer> &buffers, int start, int end, int hash_bits);
 void printBinSize(vector<Buffer> buffers);
 
 /******************************************* GLOBAL VARIABLES *******************************************/
@@ -93,7 +96,7 @@ int main(int argc, char const *argv[])
 
 void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
 {
-    pthread_t threads[THREAD_COUNT];
+    thread threads[THREAD_COUNT];
     vector<Buffer> buffers(PARTITIONS);
 
     // Init our buffer
@@ -106,26 +109,17 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
     }
 
     auto start = Utils::hp_clock::now();
-    vector<vector<DataTuple>> *chunks = Utils::split_vector(tuples, THREAD_COUNT);
+    size_t chunk = tuples.size() / THREAD_COUNT;
 
-    for (size_t i = 0; i < chunks->size(); i++)
+    for (size_t i = 0; i < THREAD_COUNT; i++)
     {
-        struct WorkerPayload *payload = (WorkerPayload *)malloc(sizeof(struct WorkerPayload));
-        payload->buffer = &buffers;
-        payload->chunks = &(chunks->at(i));
-        payload->hash_bits = HASH_BITS;
-        int rc = pthread_create(&threads[i], NULL, partioning_worker, payload);
-
-        if (rc)
-        {
-            Utils::print("ERROR; return code from pthread_create() is %d\n", rc);
-            break;
-        }
+        int start = i * chunk;
+        threads[i] = thread(partioning_worker, ref(tuples), ref(buffers), start, start + chunk, HASH_BITS);
     }
 
     for (size_t i = 0; i < THREAD_COUNT; i++)
     {
-        pthread_join(threads[i], NULL);
+        threads[i].join();
     }
     
     auto end = Utils::hp_clock::now();        
@@ -135,27 +129,20 @@ void concurrent_output(vector<DataTuple> tuples, const int THREAD_COUNT, const i
     // printBinSize(buffers);
 }
 
-void *partioning_worker(void *arg)
+void partioning_worker(vector<DataTuple> &tuples, vector<Buffer> &buffers, int start, int end, int hash_bits)
 {
-    WorkerPayload *payload = (WorkerPayload *)arg;
-
-    for (auto tuple : *payload->chunks)
+    for(int i = start; i < end; i++)
     {
-        auto dataRef = &tuple;
-        u_char *hash = Utils::sha256(dataRef->second, sizeof(uint64_t));
-        // Utils::print_hash(hash);
-        // Compute hash bits as index
-        long long idx = Utils::hashBitsToIdx(hash, payload->hash_bits);
-        // cout << idx << endl;
-        // cout << "HASH idx: " << idx << endl;
-        Buffer buffer = (payload->buffer)->at(idx);
+        auto tuple = tuples[i];
+        u_char *hash = Utils::sha256(tuple.second, sizeof(uint64_t));
+        long long idx = Utils::hashBitsToIdx(hash, hash_bits);
+        Buffer buffer = buffers.at(idx);
         int newIdx = buffer.idx->fetch_add(1);
         (*buffer.tuples)[newIdx] = tuple;
 
         // Cleanup
-        delete hash;
+        // delete hash;
     }
-    pthread_exit(NULL);
 }
 
 void printBinSize(vector<Buffer> buffers)
