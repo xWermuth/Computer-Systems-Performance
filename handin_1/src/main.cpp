@@ -79,7 +79,7 @@ int main(int argc, char const *argv[])
     auto start = Utils::hp_clock::now();
     if (algo == "parallel")
     {
-        ParallelBuffer::run(&tuples, threads, hashbits, PARTITIONS);
+        ParallelBuffer::run(tuples, threads, hashbits, PARTITIONS);
     } 
     else if(algo == "concurrent")
     {
