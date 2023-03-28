@@ -1,6 +1,6 @@
 #! /bin/bash
-
-outFile="out.log"
+datetime=$(date --iso-8601=seconds)
+outFile="${datetime}_out.log"
 
 rm -f $outFile
 echo "algo,ms,t,h" > $outFile
