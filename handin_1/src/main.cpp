@@ -138,7 +138,7 @@ void partioning_worker(vector<DataTuple> &tuples, vector<vector<DataTuple> > &bu
     for(int i = start; i < end; i++)
     {
         auto tuple = tuples[i];
-        int hashIdx = tuple.second % buffers.capacity();
+        int hashIdx = tuple.first % buffers.capacity();
         int newIdx = aIdx[hashIdx].fetch_add(1);
         buffers[hashIdx][newIdx] = tuple;
     }
