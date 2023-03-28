@@ -9,11 +9,6 @@ set(SOURCES
     src/parallel_buffer.cpp
 )
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-
-
 add_executable(handin_1 ${SOURCES})
 
 set(OPENSSL_ROOT_DIR "/Users/wachs/vcpkg/packages/openssl_arm64-osx")
@@ -21,11 +16,11 @@ find_package(OpenSSL REQUIRED)
 target_link_libraries(handin_1 PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 -Ofast")
 
 if(UNIX AND NOT APPLE)
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D PERF_TIMEOUT_SERVER -pthread ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D PERF_TIMEOUT_SERVER -pthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
     set(CMAKE_USE_WIN32_THREADS_INIT 0)
     set(CMAKE_USE_PTHREADS_INIT 1)
