@@ -54,7 +54,7 @@ do
                 while [ $(( started * t )) -le $par_limit ] && [ $iters -ge 1 ]; 
                 do
                     printf "\t\tIter %d\n" "$iters" >> "$logFile"
-                    ./build/handin_1 -t "$t" -h "$h" -a concurrent -q >> "$dataFile" &
+                    ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q >> "$dataFile" &
                     started=$((started+1))
                     iters=$((iters-1))
                 done
@@ -69,7 +69,7 @@ do
         for r in {1..10}
         do
             printf "\t\tIter %d\n" "$r" >> "$logFile"
-            ./build/handin_1 -t 32 -h "$h" -a concurrent -q >> "$dataFile"
+            ./build/handin_1 -t 32 -h "$h" -a "$algo" -q >> "$dataFile"
             
             if [ $? -ne 0 ];
             then
