@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <thread>
 #include <mutex>
+#include <climits>
 
 using namespace std;
 
