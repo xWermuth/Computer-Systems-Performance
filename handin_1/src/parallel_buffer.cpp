@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <thread>
 #include <mutex>
+#include <climits>
 
 using namespace std;
 
@@ -52,7 +53,7 @@ namespace ParallelBuffer
         {
             auto tuple = tuples[i];
 
-            int hashIdx = tuple.second % buffers->capacity();
+            int hashIdx = tuple.first % buffers->capacity();
             Partition partation = buffers->at(hashIdx);
             Chunk chunk = chunk_map[partation];
             int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
