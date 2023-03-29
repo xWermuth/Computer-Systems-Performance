@@ -45,6 +45,7 @@ int main(int argc, char const *argv[])
 {
     int threads;
     int hashbits;
+    bool perf = false;
     string algo;
     for (size_t i = 1; i < argc; i++)
     {
@@ -53,10 +54,12 @@ int main(int argc, char const *argv[])
         if(arg == "-t")
         {
             threads = atoi(argv[i + 1]);
-        } else if(arg == "-h")
+        } 
+        else if(arg == "-h")
         {
             hashbits = atoi(argv[i + 1]);
-        } else if(arg == "-a")
+        } 
+        else if(arg == "-a")
         {
             algo = string(argv[i + 1]);
         }
@@ -64,21 +67,32 @@ int main(int argc, char const *argv[])
         {
             Utils::quiet = true;
         }
+        else if(arg == "-p")
+        {
+            perf = true;
+        }
     }
 
     
     // This allows us to set an upper limit for the time it takes to generate tuples
     // in order to measure execution time with perf instead of hp_clock();
-    // uint64_t tuple_gen_perf_wait;
-    // #if PERF_TIMEOUT_SERVER
-    // tuple_gen_perf_wait = 8000;
-    // #else
-    // tuple_gen_perf_wait = 2500;
-    // #endif
-    // Utils::print("tuple_gen_perf_wait: %llu\n", tuple_gen_perf_wait);
-    // auto wait_handle = Utils::sleep_for_x(tuple_gen_perf_wait);
+    std::thread wait_handle;
+    if (perf)
+    {
+        uint64_t tuple_gen_perf_wait;
+        #if PERF_TIMEOUT_SERVER
+        tuple_gen_perf_wait = 8000;
+        #else
+        tuple_gen_perf_wait = 2500;
+        #endif
+        Utils::print("tuple_gen_perf_wait: %llu\n", tuple_gen_perf_wait);
+        wait_handle = Utils::sleep_for_x(tuple_gen_perf_wait);
+    }
     vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
-    // wait_handle.join();
+    if(perf)
+    {
+        wait_handle.join();
+    }
     
 
     const int PARTITIONS = Utils::getPartations(hashbits);
