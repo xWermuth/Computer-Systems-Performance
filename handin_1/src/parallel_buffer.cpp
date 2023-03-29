@@ -77,7 +77,6 @@ namespace ParallelBuffer
 
     void run(vector<DataTuple> &data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
     {
-        const int COUNT = data_tuples.size();
         const int chunk_size = 16384;
         const int chunks_in_part = max((COUNT / PARTITIONS) / chunk_size, 1); // 2^24 / 2^10 = 2^14 = 16384
         Utils::print("chunk_size %d, partition length = %d\n", chunk_size, chunks_in_part);

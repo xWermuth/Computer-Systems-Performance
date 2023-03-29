@@ -6,6 +6,8 @@
 
 typedef std::pair<uint64_t, uint64_t> DataTuple;
 
+#define COUNT 16777216  // 2^24
+
 namespace Utils
 {
     typedef std::chrono::high_resolution_clock hp_clock;
@@ -52,4 +54,6 @@ namespace Utils
             return;
         printf(fmt, args...);
     }
+
+    void print_bin_size(std::vector<std::vector<DataTuple>> &buffers);
 }

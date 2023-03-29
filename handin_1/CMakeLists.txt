@@ -6,7 +6,10 @@ project(handin_1)
 set(SOURCES
     src/utils.cpp
     src/main.cpp
+    include/parallel_buffer.h
+    include/concurrent_output.h
     src/parallel_buffer.cpp
+    src/concurrent_output.cpp
 )
 
 add_executable(handin_1 ${SOURCES})
