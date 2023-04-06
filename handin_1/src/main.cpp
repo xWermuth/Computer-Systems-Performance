@@ -14,25 +14,6 @@
 
 using namespace std;
 
-/******************************************* FOWARD REFRENCING *******************************************/
-
-struct Buffer
-{
-    vector<DataTuple> *tuples;
-    atomic<int> *idx; // Current writing index
-};
-
-struct WorkerPayload
-{
-    vector<Buffer> *buffer;
-    vector<DataTuple> *tuples;
-    int start;
-    int end;
-    int hash_bits;
-};
-
-/******************************************* ACTUAL CODE *******************************************/
-
 int main(int argc, char const *argv[])
 {
     int threads;
