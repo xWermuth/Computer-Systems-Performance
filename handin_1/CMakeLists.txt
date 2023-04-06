@@ -6,15 +6,13 @@ project(handin_1)
 set(SOURCES
     src/utils.cpp
     src/main.cpp
+    include/parallel_buffer.h
+    include/concurrent_output.h
     src/parallel_buffer.cpp
+    src/concurrent_output.cpp
 )
 
 add_executable(handin_1 ${SOURCES})
-
-set(OPENSSL_ROOT_DIR "/Users/wachs/vcpkg/packages/openssl_arm64-osx")
-find_package(OpenSSL REQUIRED)
-target_link_libraries(handin_1 PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++17 -Ofast")
 
