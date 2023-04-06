@@ -15,18 +15,18 @@ using namespace std;
 
 namespace ConcurrentOutput
 {
-    void run(vector<DataTuple> &tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
+    void run(const vector<DataTuple> &tuples, const int THREAD_COUNT, const int HASH_BITS, const int PARTITIONS)
     {
         thread threads[THREAD_COUNT];
         vector<vector<DataTuple>> buffers(PARTITIONS, vector<DataTuple>((COUNT / PARTITIONS) * 1.1));
         vector<atomic<int>> aIdx(PARTITIONS);
 
-        auto start = Utils::hp_clock::now();
-        size_t chunk = tuples.size() / THREAD_COUNT;
+        // const auto start = Utils::hp_clock::now();
+        const auto chunk = tuples.size() / THREAD_COUNT;
 
         for (size_t i = 0; i < THREAD_COUNT; i++)
         {
-            int start = i * chunk;
+            const int start = i * chunk;
             threads[i] = thread(con_worker, ref(tuples), ref(buffers), ref(aIdx), start, start + chunk, HASH_BITS);
         }
 
@@ -35,17 +35,18 @@ namespace ConcurrentOutput
             threads[i].join();
         }
 
-        auto end = Utils::hp_clock::now();
-        auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-        Utils::print("Time elapsed without initialization: %lld ms\n", diff);
+        // const auto end = Utils::hp_clock::now();
+        // const auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+        // Utils::print("Time elapsed without initialization: %lld ms\n", diff);
     }
-    void con_worker(vector<DataTuple> &tuples, vector<vector<DataTuple>> &buffers, vector<atomic_int> &aIdx, int start, int end, int hash_bits)
+    void con_worker(const vector<DataTuple> &tuples, vector<vector<DataTuple>> &buffers, vector<atomic_int> &aIdx, const int start, const int end, const int hash_bits)
     {
+        const int buffer_cap = buffers.capacity();
         for (int i = start; i < end; i++)
         {
-            auto tuple = tuples[i];
-            int hashIdx = tuple.first % buffers.capacity();
-            int newIdx = aIdx[hashIdx].fetch_add(1);
+            const auto tuple = tuples.at(i);
+            const int hashIdx = tuple.first % buffer_cap;
+            const int newIdx = aIdx[hashIdx].fetch_add(1);
             buffers[hashIdx][newIdx] = tuple;
         }
     }

@@ -61,14 +61,14 @@ int main(int argc, char const *argv[])
         Utils::print("tuple_gen_perf_wait: %llu\n", tuple_gen_perf_wait);
         wait_handle = Utils::sleep_for_x(tuple_gen_perf_wait);
     }
-    vector<DataTuple> tuples = Utils::gen_tuples(COUNT);
+    const auto tuples = Utils::gen_tuples(COUNT);
     if(perf)
     {
         wait_handle.join();
     }
     
 
-    const int PARTITIONS = Utils::getPartations(hashbits);
+    const int PARTITIONS = Utils::get_partitions(hashbits);
     Utils::print("THREADS: %d\n",threads);
     Utils::print("HASH_BITS:  %d\n",hashbits);
     Utils::print("PARTITIONS:  %d\n",PARTITIONS);
@@ -84,8 +84,8 @@ int main(int argc, char const *argv[])
     {
         ConcurrentOutput::run(tuples, threads, hashbits, PARTITIONS);
     }
-    auto end = Utils::hp_clock::now();
-    auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+    const auto end = Utils::hp_clock::now();
+    const auto diff = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
     // Time result
     // Utils::print("Time elapsed: %lld ms\n", diff);

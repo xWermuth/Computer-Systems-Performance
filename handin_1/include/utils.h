@@ -38,9 +38,8 @@ namespace Utils
     }
 
     inline bool quiet = false;
-    std::vector<DataTuple> gen_tuples(int);
-    int getPartations(int hashbites);
-    long long hashBitsToIdx(u_char *hash, int hashbits);
+    const std::vector<DataTuple>& gen_tuples(int);
+    int get_partitions(int hashbites);
     std::thread sleep_for_x(const uint64_t ms);
 
     template<typename... Args>

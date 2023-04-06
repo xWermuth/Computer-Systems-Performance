@@ -12,10 +12,10 @@ using namespace std;
 
 namespace Utils
 {
-    vector<DataTuple> gen_tuples(int n)
+    const vector<DataTuple>& gen_tuples(int n)
     {
-        set<int> my_set;
-        vector<DataTuple> my_tuples(n);
+        set<uint64_t> my_set;
+        vector<DataTuple> *my_tuples = new vector<DataTuple>(n);
 
         for (size_t i = 0; i < n; i++)
         {
@@ -26,22 +26,15 @@ namespace Utils
                 key = (((uint64_t)rand()) << 32) | rand();
             }
 
-            my_tuples[i] = make_pair(key, (((uint64_t)rand()) << 32) | rand());
+            my_tuples->at(i) = make_pair(key, (((uint64_t)rand()) << 32) | rand());
         }
 
-        return my_tuples;
+        return *my_tuples;
     }
 
-    int getPartations(int hashbites)
+    int get_partitions(const int hashbites)
     {
         return pow(2.0, hashbites);
-    }
-
-    long long hashBitsToIdx(u_char *hash, int hashbits)
-    {
-        int *longerHash = (int *)hash;
-        long long mask = ((1ULL << (hashbits & 0x3F)) & -(hashbits != 64)) - 1;
-        return *longerHash & mask;
     }
 
     /// @brief spawns a thread which sleeps for \p `ms` milliseconds
@@ -55,13 +48,13 @@ namespace Utils
         });
     }
 
-    void print_bin_size(vector<vector<DataTuple>> &buffers)
+    void print_bin_size(const vector<const vector<const DataTuple>> &buffers)
     {
         int i = 0;
-        for (auto buf : buffers)
+        for (const auto buf : buffers)
         {
             int count = 0;
-            for (auto tuple : buf)
+            for (const auto tuple : buf)
             {
                 if (tuple.first != 0)
                 {

@@ -44,13 +44,13 @@ namespace ParallelBuffer
         Utils::print("Total collected tuples are %d\n", sum);
     }
 
-    void buf_worker(vector<DataTuple> &tuples, Buffers &buffers, vector<mutex> &mutexes, const int start, const int end, const int hash_bits, const int chunk_size)
+    void buf_worker(const vector<DataTuple> &tuples, Buffers &buffers, vector<mutex> &mutexes, const int start, const int end, const int hash_bits, const int chunk_size)
     {
         unordered_map<Partition *, Chunk *> chunk_map;
 
         for (size_t i = start; i < end; i++)
         {
-            const DataTuple *const tuple = &tuples.at(i);
+            auto const tuple = &tuples.at(i);
 
             const int hashIdx = tuple->first % buffers.capacity();
             auto const partation = buffers.at(hashIdx);
@@ -62,10 +62,9 @@ namespace ParallelBuffer
             }
             else
             {
-                // (*mutexes)[hashIdx].lock();
                 mutex &l = mutexes.at(hashIdx);
                 l.lock();
-                auto new_chunk = new vector<const DataTuple *const >();
+                auto const new_chunk = new vector<const DataTuple *const>();
                 new_chunk->push_back(tuple);
                 partation->push_back(new_chunk);
                 chunk_map[partation] = new_chunk;
@@ -74,7 +73,7 @@ namespace ParallelBuffer
         }
     }
 
-    void run(vector<DataTuple> &data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
+    void run(const vector<DataTuple> &data_tuples, const int THREADS, const int hashbits, const int PARTITIONS)
     {
         const int chunk_size = 16384;
         const int chunks_in_part = max((COUNT / PARTITIONS) / chunk_size, 1); // 2^24 / 2^10 = 2^14 = 16384
