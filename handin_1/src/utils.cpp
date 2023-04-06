@@ -48,7 +48,7 @@ namespace Utils
         });
     }
 
-    void print_bin_size(const vector<const vector<const DataTuple>> &buffers)
+    void print_bin_size(const vector<vector<DataTuple>> &buffers)
     {
         int i = 0;
         for (const auto buf : buffers)
