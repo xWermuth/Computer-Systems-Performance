@@ -31,8 +31,6 @@ struct WorkerPayload
     int hash_bits;
 };
 
-void printBinSize(vector<vector<DataTuple> > &buffers);
-
 /******************************************* ACTUAL CODE *******************************************/
 
 int main(int argc, char const *argv[])
