@@ -20,7 +20,7 @@ namespace ParallelBuffer
     void printBuffer(Buffers &buffer, const int chunk_size_limit)
     {
         uint32_t sum = 0;
-        const auto buf_size = buffer.size();
+        auto buf_size = buffer.size();
         for (size_t i = 0; i < buf_size; i++)
         {
             // int chunks_full = 0;
@@ -64,7 +64,7 @@ namespace ParallelBuffer
             {
                 mutex &l = mutexes.at(hashIdx);
                 l.lock();
-                auto const new_chunk = new vector<const DataTuple *const>();
+                auto const new_chunk = new vector<const DataTuple *>();
                 new_chunk->push_back(tuple);
                 partition->push_back(new_chunk);
                 chunk_map[partition] = new_chunk;
@@ -80,10 +80,10 @@ namespace ParallelBuffer
         Utils::print("chunk_size %d, partition length = %d\n", chunk_size, chunks_in_part);
 
         thread my_threads[THREADS];
-        auto buffers = vector<Partition *const>();
+        auto buffers = vector<Partition *>();
         for (size_t i = 0; i < PARTITIONS; i++)
         {
-            auto partition = new vector<Chunk *const>();
+            auto partition = new vector<Chunk *>();
             buffers.push_back(partition);
         }
 

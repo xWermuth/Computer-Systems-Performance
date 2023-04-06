@@ -1,8 +1,8 @@
 #include <mutex>
 
-typedef std::vector<const DataTuple *const> Chunk;
-typedef std::vector<Chunk *const> Partition;
-typedef std::vector<Partition *const> Buffers;
+typedef std::vector<const DataTuple *> Chunk;
+typedef std::vector<Chunk *> Partition;
+typedef std::vector<Partition *> Buffers;
 
 namespace ParallelBuffer
 {
