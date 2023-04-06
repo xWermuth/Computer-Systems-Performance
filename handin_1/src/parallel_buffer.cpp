@@ -47,14 +47,14 @@ namespace ParallelBuffer
     void buf_worker(const vector<DataTuple> &tuples, Buffers &buffers, vector<mutex> &mutexes, const int start, const int end, const int hash_bits, const int chunk_size)
     {
         unordered_map<Partition *, Chunk *> chunk_map;
-
+        const auto buf_cap = buffers.capacity();
         for (size_t i = start; i < end; i++)
         {
             auto const tuple = &tuples.at(i);
 
-            const int hashIdx = tuple->first % buffers.capacity();
-            auto const partation = buffers.at(hashIdx);
-            auto const chunk = chunk_map[partation];
+            const int hashIdx = tuple->first % buf_cap;
+            auto const partition = buffers.at(hashIdx);
+            auto const chunk = chunk_map[partition];
             const int curr_chunk_size = chunk == nullptr ? INT_MAX : chunk->size();
             if (curr_chunk_size < chunk_size)
             {
@@ -66,8 +66,8 @@ namespace ParallelBuffer
                 l.lock();
                 auto const new_chunk = new vector<const DataTuple *const>();
                 new_chunk->push_back(tuple);
-                partation->push_back(new_chunk);
-                chunk_map[partation] = new_chunk;
+                partition->push_back(new_chunk);
+                chunk_map[partition] = new_chunk;
                 l.unlock();
             }
         }
