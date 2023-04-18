@@ -15,3 +15,15 @@ The Iphone video has a high bitrate. Hence we want to use FFMPEG's compression t
 ```bash
 # Some ffmpeg cmd
 ```
+
+## Benchmarking
+
+### Tools
+
+- Nvidia-smi
+
+To get PCI-E current width:
+
+```bash
+nvidia-smi --query-gpu="pcie.link.width.current" --format=csv
+```
