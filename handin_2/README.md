@@ -27,3 +27,9 @@ To get PCI-E current width:
 ```bash
 nvidia-smi --query-gpu="pcie.link.width.current" --format=csv
 ```
+
+### View GPU usage
+
+```bash
+nvidia-smi -l 1
+```
