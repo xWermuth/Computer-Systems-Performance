@@ -75,5 +75,12 @@ To see if we see more throughput
 
 ### Feed data faster to ffmpeg
 
+### Python wrapper
+
 
 ### USE DCGM.
+
+SM Active metric - nvidia smi
+
+Put file in memory
+linux: /dev/shm
