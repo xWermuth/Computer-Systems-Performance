@@ -66,3 +66,14 @@ https://forums.developer.nvidia.com/t/why-is-pcie-data-transfer-so-absolutely-sl
 **1 min Gen 1 x16**: 42s
 - TX ~ 1.305 GB/S
 - RX ~ 11 MB/S
+
+## Maybe solutions
+
+### Load a larger file
+
+To see if we see more throughput
+
+### Feed data faster to ffmpeg
+
+
+### USE DCGM.
