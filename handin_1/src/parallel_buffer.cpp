@@ -99,10 +99,8 @@ namespace ParallelBuffer
             my_threads[i] = thread(buf_worker, ref(data_tuples), ref(buffers), ref(mutexes), start, start + chunk, hashbits, chunk_size);
         }
 
-        cout << "hello ---- " << mutexes.size() << endl;
         for (size_t i = 0; i < THREADS; i++)
         {
-            cout << "j" << endl;
             my_threads[i].join();
         }
 
@@ -110,6 +108,6 @@ namespace ParallelBuffer
         // const auto diff = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
 
         // Utils::print("Time elapsed without initialization: %lld ms \n", diff);
-        printBuffer(buffers, chunk_size);
+        // printBuffer(buffers, chunk_size);
     }
 }
