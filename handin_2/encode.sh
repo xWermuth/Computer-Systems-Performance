@@ -36,3 +36,8 @@ lspci -vv
 dmidecode
 
 sudo lspci -vv | grep -P "[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f]|LnkSta:"
+
+ffmpeg -hide_banner -i /dev/shm/cut.mp4 -vf "hwupload_cuda" -t 15 -f null /dev/null -ss 30 -t 15 -f null /dev/null \
+-i /dev/shm/cut.mp4 -vf "hwupload_cuda" -t 15 -f null - \
+-i /dev/shm/cut.mp4 -vf "hwupload_cuda" -t 15 -f null - \
+-i /dev/shm/cut.mp4 -vf "hwupload_cuda" -t 15 -f null - 
