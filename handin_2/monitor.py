@@ -10,7 +10,7 @@ import random
 dt_string = datetime.now().strftime("%d_%m_%Y")
 DIR_NAME = os.path.join(os.path.dirname(__file__), dt_string)
 STD_ERR = os.path.join(DIR_NAME, "errors.txt")
-FOLDS = 8
+FOLDS = 17
 
 
 def get_ffmpeg_cmd(out_file:str, in_n: int):
@@ -73,7 +73,7 @@ def rand_color():
     return (r, g, b)
 
 def generate_pci_graph():
-    pci_gens = [1, 3]
+    pci_gens = [1,2, 3]
     for fold in range(1, FOLDS):
         x_ticks = 0
         for pci_gen in pci_gens:
@@ -122,28 +122,28 @@ def main():
     pci_gen = sp.check_output(["nvidia-smi", "--query-gpu", "pcie.link.gen.max", "--format", "csv,noheader,nounits"]).decode(sys.stdout.encoding).strip()
     pci_width = sp.check_output(["nvidia-smi", "--query-gpu", "pcie.link.width.max", "--format", "csv,noheader,nounits"]).decode(sys.stdout.encoding).strip()
 
-    for i in range(1, FOLDS):
-        afterfix = f"_{pci_gen}_{pci_width}_{i}"
-        print(afterfix)
-        REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
-        GPU_OUT_FILE = get_gpu_stats_path(afterfix)
-        FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
-        ffmpeg_out = open(REPORT_OUT_FILE, "w")
-        errors_out = open(STD_ERR, "w")
-        gpu_out = open(GPU_OUT_FILE, "w")
+    # for i in range(8, FOLDS):
+    #     afterfix = f"_{pci_gen}_{pci_width}_{i}"
+    #     print(afterfix)
+    #     REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
+    #     GPU_OUT_FILE = get_gpu_stats_path(afterfix)
+    #     FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
+    #     ffmpeg_out = open(REPORT_OUT_FILE, "w")
+    #     errors_out = open(STD_ERR, "w")
+    #     gpu_out = open(GPU_OUT_FILE, "w")
 
-        ffmpeg = sp.Popen(FFMPEG_CMD, stdout=ffmpeg_out, stderr=errors_out)
-        nvi_process = sp.Popen(SMI_CMD, stdout=gpu_out, stderr=errors_out)
-        ffmpeg.wait()
-        nvi_process.kill()
+    #     ffmpeg = sp.Popen(FFMPEG_CMD, stdout=ffmpeg_out, stderr=errors_out)
+    #     nvi_process = sp.Popen(SMI_CMD, stdout=gpu_out, stderr=errors_out)
+    #     ffmpeg.wait()
+    #     nvi_process.kill()
 
-        gpu_out.close()
-        ffmpeg_out.close()
-        errors_out.close()
+    #     gpu_out.close()
+    #     ffmpeg_out.close()
+    #     errors_out.close()
 
-        generate_report(f"PCI: {afterfix}", REPORT_OUT_FILE, GPU_OUT_FILE)
+    #     generate_report(f"PCI: {afterfix}", REPORT_OUT_FILE, GPU_OUT_FILE)
     
-    # generate_pci_graph()
+    generate_pci_graph()
 
 
 if __name__ == '__main__':
