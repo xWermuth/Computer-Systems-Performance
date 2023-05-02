@@ -11,6 +11,7 @@ dt_string = datetime.now().strftime("%d_%m_%Y")
 DIR_NAME = os.path.join(os.path.dirname(__file__), dt_string)
 STD_ERR = os.path.join(DIR_NAME, "errors.txt")
 FOLDS = 17
+NUM_OF_TRIALS = 5
 
 
 def get_ffmpeg_cmd(out_file:str, in_n: int):
@@ -30,40 +31,52 @@ def get_gpu_stats_path(prefix:str):
 # def create_file(name: str) -> None:
 #     open
 
-def generate_report(meta: str, REPORT_OUT_FILE:str, GPU_OUT_FILE:str):
+def parse_gpu_state(GPU_OUT_FILE:str):
     gpu_stats = open(GPU_OUT_FILE, "r")
     lines = gpu_stats.readlines()
-    rxs:list[int] = []
-    txs:list[int] = []
-    sm:list[int] = []
-    encoders:list[int] = []
-    decoders:list[int] = []
+
+    rxs:list[list[int]] = [None] * NUM_OF_TRIALS
+    txs:list[list[int]] = [None] * NUM_OF_TRIALS
+    sm:list[list[int]] = [None] * NUM_OF_TRIALS
+    encoders:list[list[int]] = [None] * NUM_OF_TRIALS
+    decoders:list[list[int]] = [None] * NUM_OF_TRIALS
+    curr_writing_idx = 0
     for idx, line in enumerate(lines):
         stats = line.split()
         if stats[0] == "#":
-            continue
+            # First line in file
+            if len(rxs) == 0:
+                continue
+            else:
+                curr_writing_idx += 1
+                continue
         if len(stats) > 4:
-            sm.append(int(stats[4]))
+            sm[curr_writing_idx].append(int(stats[4]))
         if len(stats) > 6:
-            encoders.append(int(stats[6]))
+            encoders[curr_writing_idx].append(int(stats[6]))
         if len(stats) > 7:
-            decoders.append(int(stats[7]))
+            decoders[curr_writing_idx].append(int(stats[7]))
         if len(stats) > 15:
             rx_pci = stats[14]
             tx_pci = stats[15]
-            rxs.append(int(rx_pci))
-            txs.append(int(tx_pci))
+            rxs[curr_writing_idx].append(int(rx_pci))
+            txs[curr_writing_idx].append(int(tx_pci))
+    
+    gpu_stats.close()
+    return [rxs, txs, sm, encoders, decoders]
 
 
+
+def generate_report(meta: str, REPORT_OUT_FILE:str, GPU_OUT_FILE:str):
+    rxs, txs, sm, encoders, decoders = parse_gpu_state(GPU_OUT_FILE)
     report = open(REPORT_OUT_FILE, "a")
-    report.write(f"{meta}: Average transfer rate: {np.average(txs)}\n")
-    report.write(f"{meta}: Average recieve rate: {np.average(rxs)}\n")
-    report.write(f"{meta}: Average sm in percentage: {np.average(sm)}\n")
-    report.write(f"{meta}: Average encoder utilized in percentage: {np.average(encoders)}\n")
-    report.write(f"{meta}: Average decoder utilized in percentage: {np.average(decoders)}\n")
+    report.write(f"{meta}: Average transfer rate: {np.average(np.array(txs).flatten())}\n")
+    report.write(f"{meta}: Average recieve rate: {np.average(np.array(rxs).flatten())}\n")
+    report.write(f"{meta}: Average sm in percentage: {np.average(np.array(sm).flatten())}\n")
+    report.write(f"{meta}: Average encoder utilized in percentage: {np.average(np.array(encoders).flatten())}\n")
+    report.write(f"{meta}: Average decoder utilized in percentage: {np.average(np.array(decoders).flatten())}\n")
 
     report.close()
-    gpu_stats.close()
 
 
 def rand_color():
@@ -79,28 +92,17 @@ def generate_pci_graph():
         for pci_gen in pci_gens:
             prefix = f"_{pci_gen}_16_{fold}"
             GPU_OUT_FILE = get_gpu_stats_path(prefix)
-            gpu_stats = open(GPU_OUT_FILE, "r")
-            lines = gpu_stats.readlines()
-            rxs:list[int] = []
-            txs:list[int] = []
-            for _, line in enumerate(lines):
-                stats = line.split()
-                if stats[0] == "#":
-                    continue
-                if len(stats) > 15:
-                    rx_pci = stats[14]
-                    tx_pci = stats[15]
-                    rxs.append(int(rx_pci))
-                    txs.append(int(tx_pci))
+            rxs, txs, _, _, _ = parse_gpu_state(GPU_OUT_FILE)
 
-            _sum = list(map(lambda _x: _x[0] + _x[1], zip(txs, rxs)))
+            rxs_avg = np.average(rxs, axis=1)
+            txs_avg = np.average(txs, axis=1)
+            _sum = list(map(lambda _x: _x[0] + _x[1], zip(txs_avg, rxs_avg)))
             
             x = [i for i in range(len(_sum))] 
             x_ticks = max(x_ticks, len(x))
             plt.plot(x, _sum, label = f"Gen{pci_gen}x16 throughput", color=rand_color())
             
         plt.legend(fancybox=True, shadow=True)
-        # plt.xticks([i for i in range(x_ticks)])
         plt.xlabel("Seconds")
         plt.ylabel("Throughput in MiB")
         noun = "streams" if fold > 1 else "stream"
@@ -109,41 +111,35 @@ def generate_pci_graph():
         plt.savefig(os.path.join(DIR_NAME, f"pci_{prefix}.png"))
         plt.clf()
 
-
-    gpu_stats.close()
-
-
-
-
-
 def main():
     if not os.path.exists(DIR_NAME):
         os.mkdir(DIR_NAME, )
     pci_gen = sp.check_output(["nvidia-smi", "--query-gpu", "pcie.link.gen.max", "--format", "csv,noheader,nounits"]).decode(sys.stdout.encoding).strip()
     pci_width = sp.check_output(["nvidia-smi", "--query-gpu", "pcie.link.width.max", "--format", "csv,noheader,nounits"]).decode(sys.stdout.encoding).strip()
 
-    # for i in range(8, FOLDS):
-    #     afterfix = f"_{pci_gen}_{pci_width}_{i}"
-    #     print(afterfix)
-    #     REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
-    #     GPU_OUT_FILE = get_gpu_stats_path(afterfix)
-    #     FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
-    #     ffmpeg_out = open(REPORT_OUT_FILE, "w")
-    #     errors_out = open(STD_ERR, "w")
-    #     gpu_out = open(GPU_OUT_FILE, "w")
-
-    #     ffmpeg = sp.Popen(FFMPEG_CMD, stdout=ffmpeg_out, stderr=errors_out)
-    #     nvi_process = sp.Popen(SMI_CMD, stdout=gpu_out, stderr=errors_out)
-    #     ffmpeg.wait()
-    #     nvi_process.kill()
-
-    #     gpu_out.close()
-    #     ffmpeg_out.close()
-    #     errors_out.close()
-
-    #     generate_report(f"PCI: {afterfix}", REPORT_OUT_FILE, GPU_OUT_FILE)
+    for i in range(8, FOLDS):
+        for trial in range(NUM_OF_TRIALS):
+            afterfix = f"_{pci_gen}_{pci_width}_{i}"
+            print(f"Trial: {trial} for {afterfix}")
+            REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
+            GPU_OUT_FILE = get_gpu_stats_path(afterfix)
+            FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
+            ffmpeg_out = open(REPORT_OUT_FILE, "w")
+            errors_out = open(STD_ERR, "w")
+            gpu_out = open(GPU_OUT_FILE, "w")
     
-    generate_pci_graph()
+            ffmpeg = sp.Popen(FFMPEG_CMD, stdout=ffmpeg_out, stderr=errors_out)
+            nvi_process = sp.Popen(SMI_CMD, stdout=gpu_out, stderr=errors_out)
+            ffmpeg.wait()
+            nvi_process.kill()
+    
+            gpu_out.close()
+            ffmpeg_out.close()
+            errors_out.close()
+
+        generate_report(f"PCI: {afterfix}", REPORT_OUT_FILE, GPU_OUT_FILE)
+    
+    # generate_pci_graph()
 
 
 if __name__ == '__main__':
