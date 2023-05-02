@@ -12,6 +12,7 @@ DIR_NAME = os.path.join(os.path.dirname(__file__), dt_string)
 STD_ERR = os.path.join(DIR_NAME, "errors.txt")
 FOLDS = 17
 NUM_OF_TRIALS = 5
+TRIAL_PREFIX= "#Trial:"
 
 
 def get_ffmpeg_cmd(out_file:str, in_n: int):
@@ -35,32 +36,32 @@ def parse_gpu_state(GPU_OUT_FILE:str):
     gpu_stats = open(GPU_OUT_FILE, "r")
     lines = gpu_stats.readlines()
 
-    rxs:list[list[int]] = [None] * NUM_OF_TRIALS
-    txs:list[list[int]] = [None] * NUM_OF_TRIALS
-    sm:list[list[int]] = [None] * NUM_OF_TRIALS
-    encoders:list[list[int]] = [None] * NUM_OF_TRIALS
-    decoders:list[list[int]] = [None] * NUM_OF_TRIALS
-    curr_writing_idx = 0
+    rxs:list[list[int]] = [[]] * NUM_OF_TRIALS
+    txs:list[list[int]] = [[]] * NUM_OF_TRIALS
+    sm:list[list[int]] = [[]] * NUM_OF_TRIALS
+    encoders:list[list[int]] = [[]] * NUM_OF_TRIALS
+    decoders:list[list[int]] = [[]] * NUM_OF_TRIALS
+    trial_idx = 0
     for idx, line in enumerate(lines):
         stats = line.split()
         if stats[0] == "#":
+            continue
+        if line.startswith(TRIAL_PREFIX):
             # First line in file
-            if len(rxs) == 0:
-                continue
-            else:
-                curr_writing_idx += 1
-                continue
+            if len(rxs) != 0:
+                trial_idx += 1
+            continue
         if len(stats) > 4:
-            sm[curr_writing_idx].append(int(stats[4]))
+            sm[trial_idx].append(int(stats[4]))
         if len(stats) > 6:
-            encoders[curr_writing_idx].append(int(stats[6]))
+            encoders[trial_idx].append(int(stats[6]))
         if len(stats) > 7:
-            decoders[curr_writing_idx].append(int(stats[7]))
+            decoders[trial_idx].append(int(stats[7]))
         if len(stats) > 15:
             rx_pci = stats[14]
             tx_pci = stats[15]
-            rxs[curr_writing_idx].append(int(rx_pci))
-            txs[curr_writing_idx].append(int(tx_pci))
+            rxs[trial_idx].append(int(rx_pci))
+            txs[trial_idx].append(int(tx_pci))
     
     gpu_stats.close()
     return [rxs, txs, sm, encoders, decoders]
@@ -118,15 +119,18 @@ def main():
     pci_width = sp.check_output(["nvidia-smi", "--query-gpu", "pcie.link.width.max", "--format", "csv,noheader,nounits"]).decode(sys.stdout.encoding).strip()
 
     for i in range(8, FOLDS):
+        afterfix = f"_{pci_gen}_{pci_width}_{i}"
+        REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
+        GPU_OUT_FILE = get_gpu_stats_path(afterfix)
+        FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
+
         for trial in range(NUM_OF_TRIALS):
-            afterfix = f"_{pci_gen}_{pci_width}_{i}"
-            print(f"Trial: {trial} for {afterfix}")
-            REPORT_OUT_FILE = os.path.join(DIR_NAME, f"report{afterfix}.txt")
-            GPU_OUT_FILE = get_gpu_stats_path(afterfix)
-            FFMPEG_CMD = get_ffmpeg_cmd(REPORT_OUT_FILE, i)
-            ffmpeg_out = open(REPORT_OUT_FILE, "w")
+            trial = f"{TRIAL_PREFIX} {trial} for {afterfix}"
+            print(trial)
+            ffmpeg_out = open(REPORT_OUT_FILE, "a+")
             errors_out = open(STD_ERR, "w")
-            gpu_out = open(GPU_OUT_FILE, "w")
+            gpu_out = open(GPU_OUT_FILE, "a+")
+            gpu_out.write(f"{trial}\n")
     
             ffmpeg = sp.Popen(FFMPEG_CMD, stdout=ffmpeg_out, stderr=errors_out)
             nvi_process = sp.Popen(SMI_CMD, stdout=gpu_out, stderr=errors_out)
@@ -141,8 +145,6 @@ def main():
     
     # generate_pci_graph()
 
-
 if __name__ == '__main__':
     print("hello")
     main()
-    
