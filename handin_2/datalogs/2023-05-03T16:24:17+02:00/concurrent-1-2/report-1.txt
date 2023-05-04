@@ -1,0 +1,458 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 5  of event 'context-switches'
+# Event count (approx.): 5
+#
+# Overhead  Command   Shared Object      Symbol           
+# ........  ........  .................  .................
+#
+    60.00%  handin_1  [kernel.kallsyms]  [k] schedule
+    40.00%  handin_1  [kernel.kallsyms]  [k] _cond_resched
+
+
+# Samples: 2  of event 'cpu-migrations'
+# Event count (approx.): 2
+#
+# Overhead  Command   Shared Object      Symbol        
+# ........  ........  .................  ..............
+#
+   100.00%  handin_1  [kernel.kallsyms]  [k] __schedule
+
+
+# Samples: 2K of event 'cycles'
+# Event count (approx.): 1122725282
+#
+# Overhead  Command   Shared Object      Symbol                                        
+# ........  ........  .................  ..............................................
+#
+    67.41%  handin_1  handin_1           [.] ConcurrentOutput::con_worker
+     9.93%  handin_1  handin_1           [.] ConcurrentOutput::run
+     6.31%  handin_1  [kernel.kallsyms]  [k] clear_page_rep
+     4.51%  handin_1  [kernel.kallsyms]  [k] page_fault
+     1.51%  handin_1  [kernel.kallsyms]  [k] get_page_from_freelist
+     0.77%  handin_1  [kernel.kallsyms]  [k] __handle_mm_fault
+     0.56%  handin_1  [kernel.kallsyms]  [k] get_mem_cgroup_from_mm
+     0.55%  handin_1  [kernel.kallsyms]  [k] __pagevec_lru_add_fn
+     0.49%  handin_1  [kernel.kallsyms]  [k] __do_page_fault
+     0.46%  handin_1  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+     0.46%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock
+     0.43%  handin_1  [kernel.kallsyms]  [k] handle_mm_fault
+     0.40%  handin_1  [kernel.kallsyms]  [k] page_add_new_anon_rmap
+     0.34%  handin_1  [kernel.kallsyms]  [k] error_entry
+     0.31%  handin_1  [kernel.kallsyms]  [k] perf_event_task_tick
+     0.31%  handin_1  [kernel.kallsyms]  [k] __mod_node_page_state
+     0.31%  handin_1  [kernel.kallsyms]  [k] down_read_trylock
+     0.28%  handin_1  [kernel.kallsyms]  [k] __inc_numa_state
+     0.26%  handin_1  [kernel.kallsyms]  [k] up_read
+     0.25%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_charge_statistics
+     0.25%  handin_1  [kernel.kallsyms]  [k] lru_cache_add_active_or_unevictable
+     0.22%  handin_1  [kernel.kallsyms]  [k] do_page_fault
+     0.22%  handin_1  [kernel.kallsyms]  [k] vmacache_find
+     0.22%  handin_1  [kernel.kallsyms]  [k] __lru_cache_add
+     0.22%  handin_1  [kernel.kallsyms]  [k] try_charge
+     0.22%  handin_1  [kernel.kallsyms]  [k] do_anonymous_page
+     0.19%  handin_1  [kernel.kallsyms]  [k] release_pages
+     0.19%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_try_charge
+     0.18%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_update_lru_size
+     0.15%  handin_1  [kernel.kallsyms]  [k] swapgs_restore_regs_and_return_to_usermode
+     0.15%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_commit_charge
+     0.12%  handin_1  [kernel.kallsyms]  [k] sync_regs
+     0.09%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_page_lruvec
+     0.09%  handin_1  [kernel.kallsyms]  [k] get_task_policy.part.32
+     0.09%  handin_1  [kernel.kallsyms]  [k] pagevec_lru_move_fn
+     0.07%  handin_1  [kernel.kallsyms]  [k] native_write_msr
+     0.06%  handin_1  [kernel.kallsyms]  [k] __hrtimer_run_queues
+     0.06%  handin_1  [kernel.kallsyms]  [k] error_exit
+     0.06%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock_irqsave
+     0.06%  handin_1  [kernel.kallsyms]  [k] __page_set_anon_rmap
+     0.06%  handin_1  [kernel.kallsyms]  [k] get_vma_policy.part.36
+     0.06%  handin_1  [kernel.kallsyms]  [k] pmd_devmap_trans_unstable
+     0.06%  handin_1  [kernel.kallsyms]  [k] __mod_zone_page_state
+     0.04%  handin_1  [kernel.kallsyms]  [k] __indirect_thunk_start
+     0.04%  handin_1  [kernel.kallsyms]  [k] update_wall_time
+     0.04%  handin_1  [kernel.kallsyms]  [k] apic_timer_interrupt
+     0.04%  handin_1  [kernel.kallsyms]  [k] __update_load_avg_se.isra.38
+     0.04%  handin_1  [kernel.kallsyms]  [k] native_read_msr
+     0.04%  handin_1  [kernel.kallsyms]  [k] update_load_avg
+     0.04%  handin_1  [kernel.kallsyms]  [k] cpuacct_account_field
+     0.03%  handin_1  [kernel.kallsyms]  [k] account_user_time
+     0.03%  handin_1  [kernel.kallsyms]  [k] smp_apic_timer_interrupt
+     0.03%  handin_1  [kernel.kallsyms]  [k] perf_swevent_start
+     0.03%  handin_1  [kernel.kallsyms]  [k] hrtimer_active
+     0.03%  handin_1  [kernel.kallsyms]  [k] update_curr
+     0.03%  handin_1  [kernel.kallsyms]  [k] timerqueue_add
+     0.03%  handin_1  [kernel.kallsyms]  [k] trigger_load_balance
+     0.03%  handin_1  [kernel.kallsyms]  [k] update_fast_timekeeper
+     0.03%  handin_1  [kernel.kallsyms]  [k] irq_enter
+     0.03%  handin_1  [kernel.kallsyms]  [k] reweight_entity
+     0.03%  handin_1  [kernel.kallsyms]  [k] alloc_pages_vma
+     0.03%  handin_1  [kernel.kallsyms]  [k] scheduler_tick
+     0.03%  handin_1  [kernel.kallsyms]  [k] amd_pmu_disable_all
+     0.03%  handin_1  [kernel.kallsyms]  [k] native_iret
+     0.03%  handin_1  [kernel.kallsyms]  [k] refill_stock
+     0.03%  handin_1  [kernel.kallsyms]  [k] policy_nodemask
+     0.03%  handin_1  [kernel.kallsyms]  [k] memcg_check_events
+     0.03%  handin_1  [kernel.kallsyms]  [k] native_irq_return_iret
+     0.03%  handin_1  [kernel.kallsyms]  [k] prepare_exit_to_usermode
+     0.03%  handin_1  [kernel.kallsyms]  [k] pfn_pte
+     0.03%  handin_1  [kernel.kallsyms]  [k] pmd_page_vaddr
+     0.03%  handin_1  libc-2.27.so       [.] sysmalloc
+     0.03%  handin_1  [kernel.kallsyms]  [k] _cond_resched
+     0.02%  handin_1  [kernel.kallsyms]  [k] free_pgd_range
+     0.02%  handin_1  [kernel.kallsyms]  [k] smp_call_function_single
+     0.01%  handin_1  [kernel.kallsyms]  [k] x86_pmu_enable_all
+
+
+# Samples: 5K of event 'instructions'
+# Event count (approx.): 874284249
+#
+# Overhead  Command   Shared Object      Symbol                                        
+# ........  ........  .................  ..............................................
+#
+    50.51%  handin_1  handin_1           [.] ConcurrentOutput::con_worker
+    13.02%  handin_1  handin_1           [.] ConcurrentOutput::run
+     3.91%  handin_1  [kernel.kallsyms]  [k] release_pages
+     2.60%  handin_1  [kernel.kallsyms]  [k] free_pcppages_bulk
+     2.55%  handin_1  [kernel.kallsyms]  [k] get_page_from_freelist
+     2.46%  handin_1  [kernel.kallsyms]  [k] unmap_page_range
+     1.47%  handin_1  [kernel.kallsyms]  [k] __handle_mm_fault
+     1.24%  handin_1  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+     1.20%  handin_1  [kernel.kallsyms]  [k] __pagevec_lru_add_fn
+     1.08%  handin_1  [kernel.kallsyms]  [k] clear_page_rep
+     1.06%  handin_1  [kernel.kallsyms]  [k] free_unref_page_commit
+     1.02%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_charge_statistics
+     0.97%  handin_1  [kernel.kallsyms]  [k] swapgs_restore_regs_and_return_to_usermode
+     0.96%  handin_1  [kernel.kallsyms]  [k] handle_mm_fault
+     0.90%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock
+     0.86%  handin_1  [kernel.kallsyms]  [k] get_mem_cgroup_from_mm
+     0.84%  handin_1  [kernel.kallsyms]  [k] free_unref_page_list
+     0.84%  handin_1  [kernel.kallsyms]  [k] __do_page_fault
+     0.82%  handin_1  [kernel.kallsyms]  [k] do_anonymous_page
+     0.76%  handin_1  [kernel.kallsyms]  [k] free_unref_page_prepare.part.64
+     0.68%  handin_1  [kernel.kallsyms]  [k] down_read_trylock
+     0.66%  handin_1  [kernel.kallsyms]  [k] page_remove_rmap
+     0.63%  handin_1  [kernel.kallsyms]  [k] __mod_zone_page_state
+     0.61%  handin_1  [kernel.kallsyms]  [k] uncharge_page
+     0.52%  handin_1  [kernel.kallsyms]  [k] vmacache_find
+     0.46%  handin_1  [kernel.kallsyms]  [k] __inc_numa_state
+     0.44%  handin_1  [kernel.kallsyms]  [k] lru_cache_add_active_or_unevictable
+     0.44%  handin_1  [kernel.kallsyms]  [k] up_read
+     0.40%  handin_1  [kernel.kallsyms]  [k] free_pcp_prepare
+     0.40%  handin_1  [kernel.kallsyms]  [k] error_entry
+     0.40%  handin_1  [kernel.kallsyms]  [k] free_pages_and_swap_cache
+     0.36%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_update_lru_size
+     0.34%  handin_1  [kernel.kallsyms]  [k] __mod_node_page_state
+     0.34%  handin_1  [kernel.kallsyms]  [k] page_add_new_anon_rmap
+     0.28%  handin_1  [kernel.kallsyms]  [k] try_charge
+     0.24%  handin_1  [kernel.kallsyms]  [k] pmd_devmap_trans_unstable
+     0.22%  handin_1  [kernel.kallsyms]  [k] pagevec_lru_move_fn
+     0.20%  handin_1  [kernel.kallsyms]  [k] page_fault
+     0.20%  handin_1  [kernel.kallsyms]  [k] get_task_policy.part.32
+     0.18%  handin_1  [kernel.kallsyms]  [k] sync_regs
+     0.16%  handin_1  [kernel.kallsyms]  [k] __lru_cache_add
+     0.16%  handin_1  [kernel.kallsyms]  [k] alloc_pages_vma
+     0.16%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_try_charge
+     0.14%  handin_1  [kernel.kallsyms]  [k] __dec_node_state
+     0.14%  handin_1  [kernel.kallsyms]  [k] get_vma_policy.part.36
+     0.14%  handin_1  [kernel.kallsyms]  [k] policy_nodemask
+     0.14%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_page_lruvec
+     0.14%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_uncharge_list
+     0.12%  handin_1  [kernel.kallsyms]  [k] __get_vma_policy
+     0.11%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock_irqsave
+     0.10%  handin_1  [kernel.kallsyms]  [k] memcg_check_events
+     0.10%  handin_1  [kernel.kallsyms]  [k] policy_node
+     0.10%  handin_1  [kernel.kallsyms]  [k] __page_set_anon_rmap
+     0.10%  handin_1  [kernel.kallsyms]  [k] pfn_pte
+     0.08%  handin_1  [kernel.kallsyms]  [k] do_page_fault
+     0.08%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_from_task
+     0.08%  handin_1  [kernel.kallsyms]  [k] _cond_resched
+     0.07%  handin_1  [kernel.kallsyms]  [k] perf_event_task_tick
+     0.06%  handin_1  [kernel.kallsyms]  [k] pmd_page_vaddr
+     0.05%  handin_1  [kernel.kallsyms]  [k] __update_load_avg_se.isra.38
+     0.05%  handin_1  [kernel.kallsyms]  [k] kmem_cache_alloc_trace
+     0.04%  handin_1  [kernel.kallsyms]  [k] select_task_rq_fair
+     0.04%  handin_1  [kernel.kallsyms]  [k] pmd_pfn
+     0.04%  handin_1  [kernel.kallsyms]  [k] page_counter_try_charge
+     0.04%  handin_1  [kernel.kallsyms]  [k] irq_work_tick
+     0.02%  handin_1  [kernel.kallsyms]  [k] find_vma
+     0.02%  handin_1  [kernel.kallsyms]  [k] update_vsyscall
+     0.02%  handin_1  [kernel.kallsyms]  [k] update_fast_timekeeper
+     0.02%  handin_1  [kernel.kallsyms]  [k] __indirect_thunk_start
+     0.02%  handin_1  [kernel.kallsyms]  [k] __note_gp_changes
+     0.02%  handin_1  [kernel.kallsyms]  [k] native_read_msr
+     0.02%  handin_1  [kernel.kallsyms]  [k] refill_stock
+     0.02%  handin_1  [kernel.kallsyms]  [k] __pte_alloc
+     0.02%  handin_1  [kernel.kallsyms]  [k] rcu_all_qs
+     0.02%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_commit_charge
+     0.02%  handin_1  [kernel.kallsyms]  [k] native_iret
+     0.02%  handin_1  [kernel.kallsyms]  [k] perf_iterate_ctx
+     0.02%  handin_1  [kernel.kallsyms]  [k] memcg_kmem_charge
+     0.02%  handin_1  [kernel.kallsyms]  [k] cpu_needs_another_gp
+     0.02%  handin_1  [kernel.kallsyms]  [k] hrtimer_forward
+     0.02%  handin_1  [kernel.kallsyms]  [k] amd_pmu_addr_offset
+     0.02%  handin_1  [kernel.kallsyms]  [k] x86_pmu_disable
+     0.02%  handin_1  [kernel.kallsyms]  [k] rcu_irq_exit
+     0.02%  handin_1  [kernel.kallsyms]  [k] ret_from_intr
+     0.02%  handin_1  [kernel.kallsyms]  [k] tick_program_event
+     0.02%  handin_1  [kernel.kallsyms]  [k] hrtimer_active
+     0.02%  handin_1  [kernel.kallsyms]  [k] read_tsc
+     0.02%  handin_1  [kernel.kallsyms]  [k] account_entity_dequeue
+     0.01%  handin_1  [kernel.kallsyms]  [k] free_pgd_range
+     0.00%  handin_1  [kernel.kallsyms]  [k] page_evictable
+     0.00%  handin_1  [kernel.kallsyms]  [k] unlock_page
+     0.00%  handin_1  [kernel.kallsyms]  [k] ctx_sched_in
+     0.00%  handin_1  [kernel.kallsyms]  [k] native_write_msr
+     0.00%  handin_1  [kernel.kallsyms]  [k] x86_pmu_enable_all
+
+
+# Samples: 5K of event 'cache-references'
+# Event count (approx.): 33040404
+#
+# Overhead  Command   Shared Object      Symbol                                        
+# ........  ........  .................  ..............................................
+#
+    30.46%  handin_1  handin_1           [.] ConcurrentOutput::run
+    24.75%  handin_1  handin_1           [.] ConcurrentOutput::con_worker
+    15.92%  handin_1  [kernel.kallsyms]  [k] clear_page_rep
+     3.35%  handin_1  [kernel.kallsyms]  [k] page_fault
+     3.18%  handin_1  [kernel.kallsyms]  [k] get_page_from_freelist
+     1.73%  handin_1  [kernel.kallsyms]  [k] get_mem_cgroup_from_mm
+     1.44%  handin_1  [kernel.kallsyms]  [k] __do_page_fault
+     1.32%  handin_1  [kernel.kallsyms]  [k] vmacache_find
+     1.15%  handin_1  [kernel.kallsyms]  [k] up_read
+     1.10%  handin_1  [kernel.kallsyms]  [k] release_pages
+     0.93%  handin_1  [kernel.kallsyms]  [k] handle_mm_fault
+     0.85%  handin_1  [kernel.kallsyms]  [k] free_pages_and_swap_cache
+     0.85%  handin_1  [kernel.kallsyms]  [k] free_unref_page_list
+     0.84%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_charge_statistics
+     0.82%  handin_1  [kernel.kallsyms]  [k] __handle_mm_fault
+     0.82%  handin_1  [kernel.kallsyms]  [k] unmap_page_range
+     0.75%  handin_1  [kernel.kallsyms]  [k] free_pcppages_bulk
+     0.62%  handin_1  [kernel.kallsyms]  [k] free_unref_page_commit
+     0.57%  handin_1  [kernel.kallsyms]  [k] lru_cache_add_active_or_unevictable
+     0.56%  handin_1  [kernel.kallsyms]  [k] down_read_trylock
+     0.55%  handin_1  [kernel.kallsyms]  [k] perf_event_task_tick
+     0.52%  handin_1  [kernel.kallsyms]  [k] error_entry
+     0.50%  handin_1  [kernel.kallsyms]  [k] __lru_cache_add
+     0.46%  handin_1  [kernel.kallsyms]  [k] uncharge_page
+     0.40%  handin_1  [kernel.kallsyms]  [k] alloc_pages_vma
+     0.39%  handin_1  [kernel.kallsyms]  [k] swapgs_restore_regs_and_return_to_usermode
+     0.35%  handin_1  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+     0.34%  handin_1  [kernel.kallsyms]  [k] free_unref_page_prepare.part.64
+     0.31%  handin_1  [kernel.kallsyms]  [k] sync_regs
+     0.31%  handin_1  [kernel.kallsyms]  [k] do_anonymous_page
+     0.26%  handin_1  [kernel.kallsyms]  [k] __mod_zone_page_state
+     0.24%  handin_1  [kernel.kallsyms]  [k] __mod_node_page_state
+     0.23%  handin_1  [kernel.kallsyms]  [k] __inc_numa_state
+     0.21%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_try_charge
+     0.18%  handin_1  [kernel.kallsyms]  [k] free_pcp_prepare
+     0.18%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock
+     0.17%  handin_1  [kernel.kallsyms]  [k] page_remove_rmap
+     0.14%  handin_1  [kernel.kallsyms]  [k] memcg_check_events
+     0.13%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_uncharge_list
+     0.13%  handin_1  [kernel.kallsyms]  [k] __dec_node_state
+     0.13%  handin_1  [kernel.kallsyms]  [k] __pagevec_lru_add_fn
+     0.13%  handin_1  [kernel.kallsyms]  [k] try_charge
+     0.12%  handin_1  [kernel.kallsyms]  [k] _raw_spin_unlock_irqrestore
+     0.11%  handin_1  [kernel.kallsyms]  [k] __page_set_anon_rmap
+     0.10%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_page_lruvec
+     0.08%  handin_1  [kernel.kallsyms]  [k] page_counter_try_charge
+     0.08%  handin_1  [kernel.kallsyms]  [k] pfn_pte
+     0.06%  handin_1  [kernel.kallsyms]  [k] rcu_check_callbacks
+     0.06%  handin_1  [kernel.kallsyms]  [k] cpuacct_account_field
+     0.05%  handin_1  [kernel.kallsyms]  [k] run_posix_cpu_timers
+     0.05%  handin_1  [kernel.kallsyms]  [k] tick_sched_do_timer
+     0.04%  handin_1  [kernel.kallsyms]  [k] calc_global_load_tick
+     0.04%  handin_1  [kernel.kallsyms]  [k] update_curr
+     0.04%  handin_1  [kernel.kallsyms]  [k] pagevec_lru_move_fn
+     0.04%  handin_1  [kernel.kallsyms]  [k] pmd_pfn
+     0.04%  handin_1  [kernel.kallsyms]  [k] pmd_devmap_trans_unstable
+     0.04%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_update_lru_size
+     0.04%  handin_1  [kernel.kallsyms]  [k] task_tick_numa
+     0.04%  handin_1  [kernel.kallsyms]  [k] cpu_load_update
+     0.04%  handin_1  [kernel.kallsyms]  [k] get_task_policy.part.32
+     0.03%  handin_1  [kernel.kallsyms]  [k] task_tick_fair
+     0.03%  handin_1  [kernel.kallsyms]  [k] account_process_tick
+     0.03%  handin_1  [kernel.kallsyms]  [k] memset
+     0.02%  handin_1  [kernel.kallsyms]  [k] hrtimer_active
+     0.02%  handin_1  [kernel.kallsyms]  [k] hrtimer_interrupt
+     0.02%  handin_1  [kernel.kallsyms]  [k] perf_iterate_ctx
+     0.02%  handin_1  [kernel.kallsyms]  [k] timerqueue_del
+     0.02%  handin_1  [kernel.kallsyms]  [k] mutex_unlock
+     0.02%  handin_1  [kernel.kallsyms]  [k] update_wall_time
+     0.02%  handin_1  [kernel.kallsyms]  [k] irq_exit
+     0.02%  handin_1  [kernel.kallsyms]  [k] apic_timer_interrupt
+     0.02%  handin_1  [kernel.kallsyms]  [k] memcpy
+     0.02%  handin_1  [kernel.kallsyms]  [k] read_tsc
+     0.02%  handin_1  [kernel.kallsyms]  [k] perf_mux_hrtimer_handler
+     0.02%  handin_1  [kernel.kallsyms]  [k] task_scan_min
+     0.02%  handin_1  [kernel.kallsyms]  [k] __dec_node_page_state
+     0.02%  handin_1  [kernel.kallsyms]  [k] _vm_normal_page
+     0.02%  handin_1  [kernel.kallsyms]  [k] tlb_flush_mmu_free
+     0.02%  handin_1  [kernel.kallsyms]  [k] page_counter_cancel
+     0.02%  handin_1  [kernel.kallsyms]  [k] locks_remove_file
+     0.02%  handin_1  [kernel.kallsyms]  [k] cpuacct_charge
+     0.02%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock_irqsave
+     0.01%  handin_1  [kernel.kallsyms]  [k] uncharge_batch
+     0.01%  handin_1  [kernel.kallsyms]  [k] wake_q_add
+     0.01%  handin_1  [kernel.kallsyms]  [k] run_timer_softirq
+     0.01%  handin_1  [kernel.kallsyms]  [k] do_mprotect_pkey
+     0.01%  handin_1  [kernel.kallsyms]  [k] update_load_avg
+     0.01%  handin_1  [kernel.kallsyms]  [k] raise_softirq
+     0.01%  handin_1  [kernel.kallsyms]  [k] check_preempt_curr
+     0.01%  handin_1  [kernel.kallsyms]  [k] decay_load
+     0.01%  handin_1  [kernel.kallsyms]  [k] ktime_get
+     0.01%  handin_1  [kernel.kallsyms]  [k] cpu_needs_another_gp
+     0.01%  handin_1  [kernel.kallsyms]  [k] account_user_time
+     0.01%  handin_1  [kernel.kallsyms]  [k] account_entity_dequeue
+     0.01%  handin_1  [kernel.kallsyms]  [k] prepare_exit_to_usermode
+     0.01%  handin_1  [kernel.kallsyms]  [k] smp_apic_timer_interrupt
+     0.01%  handin_1  [kernel.kallsyms]  [k] try_to_wake_up
+     0.01%  handin_1  [kernel.kallsyms]  [k] __hrtimer_run_queues
+     0.01%  handin_1  [kernel.kallsyms]  [k] perf_swevent_start
+     0.01%  handin_1  [kernel.kallsyms]  [k] x86_pmu_disable_all
+     0.01%  handin_1  [kernel.kallsyms]  [k] amd_pmu_addr_offset
+     0.01%  handin_1  [kernel.kallsyms]  [k] enqueue_task_fair
+     0.01%  handin_1  [kernel.kallsyms]  [k] tick_program_event
+     0.01%  handin_1  [kernel.kallsyms]  [k] update_vsyscall
+     0.01%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock_irq
+     0.01%  handin_1  [kvm]              [k] pvclock_gtod_notify
+     0.01%  handin_1  [kernel.kallsyms]  [k] idle_cpu
+     0.01%  handin_1  [kernel.kallsyms]  [k] anon_vma_interval_tree_iter_next
+     0.00%  handin_1  libm-2.27.so       [.] __exp2_finite
+     0.00%  handin_1  [kernel.kallsyms]  [k] page_get_anon_vma
+     0.00%  handin_1  [kernel.kallsyms]  [k] native_write_msr
+     0.00%  handin_1  [kernel.kallsyms]  [k] ctx_sched_in
+     0.00%  handin_1  [kernel.kallsyms]  [k] x86_pmu_enable_all
+
+
+# Samples: 4K of event 'cache-misses'
+# Event count (approx.): 8531497
+#
+# Overhead  Command   Shared Object      Symbol                                 
+# ........  ........  .................  .......................................
+#
+    39.97%  handin_1  [kernel.kallsyms]  [k] clear_page_rep
+    30.60%  handin_1  handin_1           [.] ConcurrentOutput::con_worker
+    20.71%  handin_1  handin_1           [.] ConcurrentOutput::run
+     3.04%  handin_1  [kernel.kallsyms]  [k] get_page_from_freelist
+     0.77%  handin_1  [kernel.kallsyms]  [k] perf_event_task_tick
+     0.39%  handin_1  [kernel.kallsyms]  [k] unmap_page_range
+     0.33%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_try_charge
+     0.29%  handin_1  [kernel.kallsyms]  [k] page_remove_rmap
+     0.28%  handin_1  [kernel.kallsyms]  [k] page_fault
+     0.26%  handin_1  [kernel.kallsyms]  [k] alloc_pages_vma
+     0.21%  handin_1  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+     0.21%  handin_1  [kernel.kallsyms]  [k] free_pcppages_bulk
+     0.19%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock
+     0.16%  handin_1  [kernel.kallsyms]  [k] free_pages_and_swap_cache
+     0.14%  handin_1  [kernel.kallsyms]  [k] release_pages
+     0.13%  handin_1  [kernel.kallsyms]  [k] do_anonymous_page
+     0.13%  handin_1  [kernel.kallsyms]  [k] error_entry
+     0.12%  handin_1  [kernel.kallsyms]  [k] __mod_node_page_state
+     0.09%  handin_1  [kernel.kallsyms]  [k] uncharge_page
+     0.08%  handin_1  [kernel.kallsyms]  [k] __handle_mm_fault
+     0.07%  handin_1  [kernel.kallsyms]  [k] cpu_needs_another_gp
+     0.07%  handin_1  [kernel.kallsyms]  [k] memcg_kmem_charge
+     0.07%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_uncharge_list
+     0.07%  handin_1  [kernel.kallsyms]  [k] run_timer_softirq
+     0.06%  handin_1  [kernel.kallsyms]  [k] update_curr
+     0.05%  handin_1  [kernel.kallsyms]  [k] update_fast_timekeeper
+     0.04%  handin_1  [kernel.kallsyms]  [k] rcu_all_qs
+     0.04%  handin_1  [kernel.kallsyms]  [k] sched_avg_update
+     0.04%  handin_1  [kernel.kallsyms]  [k] rcu_check_callbacks
+     0.04%  handin_1  [kernel.kallsyms]  [k] irq_exit
+     0.04%  handin_1  [kernel.kallsyms]  [k] lapic_next_event
+     0.04%  handin_1  [kernel.kallsyms]  [k] lru_cache_add_active_or_unevictable
+     0.04%  handin_1  [kernel.kallsyms]  [k] sync_regs
+     0.04%  handin_1  [kernel.kallsyms]  [k] up_read
+     0.04%  handin_1  [kernel.kallsyms]  [k] page_add_new_anon_rmap
+     0.04%  handin_1  [kernel.kallsyms]  [k] sync_mm_rss
+     0.04%  handin_1  [kernel.kallsyms]  [k] get_task_policy.part.32
+     0.04%  handin_1  [kernel.kallsyms]  [k] account_process_tick
+     0.04%  handin_1  [kernel.kallsyms]  [k] dec_zone_page_state
+     0.04%  handin_1  [kernel.kallsyms]  [k] mem_cgroup_page_lruvec
+     0.04%  handin_1  [kernel.kallsyms]  [k] perf_iterate_ctx
+     0.04%  handin_1  [kernel.kallsyms]  [k] __mem_cgroup_threshold
+     0.04%  handin_1  [kernel.kallsyms]  [k] _cond_resched
+     0.04%  handin_1  [kernel.kallsyms]  [k] apic_timer_interrupt
+     0.03%  handin_1  [kernel.kallsyms]  [k] scheduler_tick
+     0.03%  handin_1  [kernel.kallsyms]  [k] kmem_cache_alloc_trace
+     0.03%  handin_1  [kernel.kallsyms]  [k] memset
+     0.03%  handin_1  [kernel.kallsyms]  [k] rb_erase_cached
+     0.03%  handin_1  [kernel.kallsyms]  [k] trigger_load_balance
+     0.03%  handin_1  [kernel.kallsyms]  [k] get_mem_cgroup_from_mm
+     0.02%  handin_1  [kernel.kallsyms]  [k] prepare_exit_to_usermode
+     0.02%  handin_1  [kernel.kallsyms]  [k] task_tick_numa
+     0.02%  handin_1  [kernel.kallsyms]  [k] task_tick_fair
+     0.02%  handin_1  [kernel.kallsyms]  [k] account_entity_dequeue
+     0.02%  handin_1  [kernel.kallsyms]  [k] free_unref_page_list
+     0.02%  handin_1  [kernel.kallsyms]  [k] smp_apic_timer_interrupt
+     0.02%  handin_1  [kernel.kallsyms]  [k] account_user_time
+     0.02%  handin_1  [kernel.kallsyms]  [k] hrtimer_active
+     0.01%  handin_1  [kernel.kallsyms]  [k] cpuacct_account_field
+     0.01%  handin_1  [kernel.kallsyms]  [k] __softirqentry_text_start
+     0.01%  handin_1  [kernel.kallsyms]  [k] cpuacct_charge
+     0.01%  handin_1  [kernel.kallsyms]  [k] native_read_msr
+     0.01%  handin_1  [kernel.kallsyms]  [k] _raw_spin_trylock
+     0.01%  handin_1  [kernel.kallsyms]  [k] __update_load_avg_se.isra.38
+     0.01%  handin_1  [kernel.kallsyms]  [k] profile_tick
+     0.01%  handin_1  [kernel.kallsyms]  [k] _raw_spin_lock_irq
+     0.01%  handin_1  [kernel.kallsyms]  [k] decay_load
+     0.01%  handin_1  [kernel.kallsyms]  [k] update_cfs_group
+     0.01%  handin_1  [kernel.kallsyms]  [k] tick_sched_do_timer
+     0.01%  handin_1  [kernel.kallsyms]  [k] update_vsyscall
+     0.01%  handin_1  [kernel.kallsyms]  [k] tick_sched_timer
+     0.01%  handin_1  [kernel.kallsyms]  [k] rebalance_domains
+     0.01%  handin_1  [kernel.kallsyms]  [k] timekeeping_update
+     0.01%  handin_1  [kernel.kallsyms]  [k] update_wall_time
+     0.01%  handin_1  [kernel.kallsyms]  [k] read_tsc
+     0.01%  handin_1  [kernel.kallsyms]  [k] __remove_hrtimer
+     0.01%  handin_1  [kernel.kallsyms]  [k] perf_pmu_nop_void
+     0.01%  handin_1  [kernel.kallsyms]  [k] tick_program_event
+     0.01%  handin_1  [kernel.kallsyms]  [k] __hrtimer_run_queues
+     0.01%  handin_1  [kernel.kallsyms]  [k] raw_notifier_call_chain
+     0.01%  handin_1  [kernel.kallsyms]  [k] __x86_indirect_thunk_r14
+     0.01%  handin_1  [kernel.kallsyms]  [k] tick_do_update_jiffies64.part.11
+     0.01%  handin_1  [kernel.kallsyms]  [k] irq_work_tick
+     0.01%  handin_1  [kernel.kallsyms]  [k] rcu_process_callbacks
+     0.01%  handin_1  [kernel.kallsyms]  [k] irq_enter
+     0.01%  handin_1  [kernel.kallsyms]  [k] ntp_tick_length
+     0.01%  handin_1  [kernel.kallsyms]  [k] find_busiest_group
+     0.01%  handin_1  [kernel.kallsyms]  [k] x86_pmu_disable
+     0.01%  handin_1  [kernel.kallsyms]  [k] pick_next_task_rt
+     0.01%  handin_1  libc-2.27.so       [.] bcmp
+     0.01%  handin_1  [kernel.kallsyms]  [k] ext4_inode_csum_set
+     0.01%  handin_1  [kernel.kallsyms]  [k] __bitmap_and
+     0.01%  handin_1  [kernel.kallsyms]  [k] lockref_put_return
+     0.01%  handin_1  [kernel.kallsyms]  [k] free_pgd_range
+     0.01%  handin_1  [kernel.kallsyms]  [k] userfaultfd_unmap_complete
+     0.00%  handin_1  [kernel.kallsyms]  [k] task_numa_fault
+     0.00%  handin_1  [kernel.kallsyms]  [k] rcu_irq_exit
+     0.00%  handin_1  [kernel.kallsyms]  [k] __dec_node_page_state
+     0.00%  handin_1  [kernel.kallsyms]  [k] unlock_page
+     0.00%  handin_1  ld-2.27.so         [.] memset
+     0.00%  handin_1  libgcc_s.so.1      [.] __cpu_indicator_init
+     0.00%  handin_1  [kernel.kallsyms]  [k] task_scan_min
+     0.00%  handin_1  [kernel.kallsyms]  [k] select_task_rq_fair
+     0.00%  handin_1  [kernel.kallsyms]  [k] mod_timer
+     0.00%  handin_1  [kernel.kallsyms]  [k] __indirect_thunk_start
+     0.00%  handin_1  [kernel.kallsyms]  [k] native_apic_mem_write
+     0.00%  handin_1  [kernel.kallsyms]  [k] perf_ctx_unlock
+     0.00%  handin_1  [kernel.kallsyms]  [k] timerqueue_add
+
+
+# Samples: 0  of event 'dummy:HG'
+# Event count (approx.): 0
+#
+# Overhead  Command  Shared Object  Symbol
+# ........  .......  .............  ......
+#
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#

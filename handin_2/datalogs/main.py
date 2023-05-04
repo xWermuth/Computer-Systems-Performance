@@ -5,8 +5,7 @@ import numpy as np
 CACHE_MISSES_ACRO = "'cache-misses'"
 
 DIRS = [
-    "2023-04-26T13:01:52+02:00",
-    "2023-04-27T18:16:03+02:00"
+    "2023-05-03T16:24:17+02:00"
 ]
 THREADS = [1,2,4,8,16,32]
 HASH_BITS = list(range(1,19))
@@ -81,27 +80,32 @@ for key, cache_misses in data.items():
 my_max = 0
 
 for a_t, h_avg in algo_map.items():
-    meta = a_t.split("-")
-    alg = meta[0]
-    thread = meta[1]
-    print(len(h_avg))
-    print(len(x_ticks))
-    if alg == "concurrent":
-        print("IS OTSSSS")
-        plt.figure(0)
-    else: 
-        print("sssS")
-        plt.figure(1)
-    plt.plot(x_ticks, h_avg, label=f"Thread {thread}")
-    plt.xticks(x_ticks)
-    plt.legend()
-    my_max = np.max(h_avg)
+    try:
+        meta = a_t.split("-")
+        alg = meta[0]
+        thread = meta[1]
+        print(len(h_avg))
+        print(len(x_ticks))
+        # if(len(h_avg) != len(x_ticks)):
+        #     print("skip", a_t)
+        #     continue
+        if alg == "concurrent":
+            print("IS OTSSSS")
+            plt.figure(0)
+        else: 
+            print("sssS")
+            plt.figure(1)
+        plt.plot(x_ticks[:17], h_avg[:17], label=f"Thread {thread}")
+        plt.xticks(x_ticks)
+        plt.legend()
+        my_max = np.max(h_avg)
 
-    # print(f"{a_t}: \nmax: {np.max(h_avg)}, \nmin: {np.min(h_avg)}, \nmid: {np.median(h_avg)}\n\n")
-    # plt.yticks([1_000_000,5_000_000, 10_000_000, 20_000_000, 30_000_000,40_000_000,50_000_000, 100_000_000, 200_000_000])
-    ax = plt.gca()
-    ax.get_xaxis().get_major_formatter().set_useOffset(False)
-
+        # print(f"{a_t}: \nmax: {np.max(h_avg)}, \nmin: {np.min(h_avg)}, \nmid: {np.median(h_avg)}\n\n")
+        # plt.yticks([1_000_000,5_000_000, 10_000_000, 20_000_000, 30_000_000,40_000_000,50_000_000, 100_000_000, 200_000_000])
+        ax = plt.gca()
+        ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    except:
+        pass
 
 plt.figure(0)
 plt.savefig(f"concurrent.png")
