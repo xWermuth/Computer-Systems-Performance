@@ -5,7 +5,7 @@ import numpy as np
 CACHE_MISSES_ACRO = "'cache-misses'"
 
 DIRS = [
-    "2023-05-03T16:24:17+02:00"
+    "2023-05-05T00:02:16+02:00"
 ]
 THREADS = [1,2,4,8,16,32]
 HASH_BITS = list(range(1,19))
