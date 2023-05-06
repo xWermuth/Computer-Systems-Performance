@@ -1,16 +1,21 @@
 import re
-import glob, os
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-REGEX = "(?P<name>[a-zA-Z][a-zA-Z0-9)( -]*)\#\s*(?P<value>\d+\.\d+)"
-
+REGEX_STATS = "(?P<name>[a-zA-Z][a-zA-Z0-9)( -]*)\#\s*(?P<value>\d+\.\d+)"
+REGEX_TIME = "(?P<elapsed>\d+\.\d+) seconds time elapsed"
+# Perf has timeout on 8 seconds
+DIFF = 8
+THROUGHPUT_METRIC = "throughput"
+TUPLE_COUNT = int(pow(2, 24))
 OUT_PIC_NAME = "./pictures"
 if not os.path.exists(OUT_PIC_NAME):
     os.mkdir(OUT_PIC_NAME)
 ALGOS = ["concurrent", "parallel"]
 FILES:list[str] = []
 stats:dict[str, list[float]] = {}
+
 for algo in ALGOS:
     for root, dirs, files in os.walk(f"./{algo}"):
         for file_path in files:
@@ -26,17 +31,24 @@ for file_path in FILES:
     with open(file_path) as f:
         lines = f.readlines()
         for l in lines:
-            res = re.search(REGEX, l)
-            if res is None:
-                continue
+            res_stats = re.search(REGEX_STATS, l)
+            res_time = re.search(REGEX_TIME, l) 
+            if res_stats is not None: 
+                name = res_stats.group('name').strip()
+                value = res_stats.group('value')
+                # print(f"name: {name}, value: {value}")
+                key = f"{algo}/{thread}/{hashbit}/{name}"
+                if stats.get(key) is None:
+                    stats[key] = []
+                stats[key].append(float(value))
+            elif res_time is not None: 
+                elapsed = float(res_time.group("elapsed").strip()) - DIFF
+                key = f"{algo}/{thread}/{hashbit}/{THROUGHPUT_METRIC}"
+                if stats.get(key) is None:
+                    stats[key] = []
+                throughput = (TUPLE_COUNT / elapsed) / 1_000_000
+                stats[key].append(throughput)
 
-            name = res.group('name').strip()
-            value = res.group('value')
-            # print(f"name: {name}, value: {value}")
-            key = f"{algo}/{thread}/{hashbit}/{name}"
-            if stats.get(key) is None:
-                stats[key] = []
-            stats[key].append(float(value))
     
 data_map:dict[str, list[float]] = {}
 
