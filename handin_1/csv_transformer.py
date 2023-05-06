@@ -4,7 +4,7 @@ from os import path
 
 
 DATA_FILE_PATH = "./"
-DATA_FILE_NAME = "data"
+DATA_FILE_NAME = "2023-05-03T14:36:32+02:00.data"
 ALGORITHMS = ["concurrent","parallel"]
 
 tuple_count = int(pow(2, 24))
