@@ -48,67 +48,51 @@ for d in DIRS:
         if stats[len(stats) - 1].strip() == CACHE_MISSES_ACRO:
             stats = lines_arr[idx + 1].split()
             cache_miss = int(stats[len(stats) - 1].strip())
-            # print(cache_miss)
             data[meta_data].append(cache_miss)
 
     grep_in.close()
 
 x_ticks = HASH_BITS
+DIVIDE_FACTOR = 1_000_000
 
 algo_map = {}
 
 for key, cache_misses in data.items():
-    # print(f"{key}: {np.average(cache_misses)}")
     meta = key.split("-")
     algo = meta[0]
     thread = meta[1]
     hasbit = meta[2]
-    cache_miss_avg = np.average(cache_misses)
+    cache_miss_avg = np.average(cache_misses) / DIVIDE_FACTOR
     my_key = algo + "-" + thread
     if algo_map.get(my_key) is None:
         algo_map[my_key] = []    
-    algo_map[my_key].append(cache_miss_avg)
-
-    # plt.plot(x_ticks, cache_miss)
-    # plt.xticks(x_ticks)
-
-# plt.savefig("here.png")
-    
-
-
-# plot
-my_max = 0
+    algo_map[my_key].append((int(hasbit), cache_miss_avg))
 
 for a_t, h_avg in algo_map.items():
-    try:
-        meta = a_t.split("-")
-        alg = meta[0]
-        thread = meta[1]
-        print(len(h_avg))
-        print(len(x_ticks))
-        # if(len(h_avg) != len(x_ticks)):
-        #     print("skip", a_t)
-        #     continue
-        if alg == "concurrent":
-            print("IS OTSSSS")
-            plt.figure(0)
-        else: 
-            print("sssS")
-            plt.figure(1)
-        plt.plot(x_ticks[:17], h_avg[:17], label=f"Thread {thread}")
-        plt.xticks(x_ticks)
-        plt.legend()
-        my_max = np.max(h_avg)
+    meta = a_t.split("-")
+    alg = meta[0]
+    thread = meta[1]
+    # if(len(h_avg) != len(x_ticks)):
+    #     print("skip", a_t)
+    #     continue
+    if alg == "concurrent":
+        plt.figure(0)
+    else: 
+        plt.figure(1)
+    # sort by hasbit
+    h_avg.sort(key=lambda a: a[0])
+    data = list(map(lambda x: x[1], h_avg))
+    plt.plot(x_ticks[:17], data[:17], label=f"Thread {thread}")
+    plt.xticks(x_ticks)
+    plt.legend()
+    ax = plt.gca()
+    ax.get_xaxis().get_major_formatter().set_useOffset(False)
 
-        # print(f"{a_t}: \nmax: {np.max(h_avg)}, \nmin: {np.min(h_avg)}, \nmid: {np.median(h_avg)}\n\n")
-        # plt.yticks([1_000_000,5_000_000, 10_000_000, 20_000_000, 30_000_000,40_000_000,50_000_000, 100_000_000, 200_000_000])
-        ax = plt.gca()
-        ax.get_xaxis().get_major_formatter().set_useOffset(False)
-    except:
-        pass
 
 plt.figure(0)
-plt.savefig(f"concurrent.png")
+plt.title("Concurrent algorithm cache misses in millions")
+plt.savefig("concurrent.png")
 plt.figure(1)
-plt.savefig(f"parallel.png")
+plt.title("Parallel algorithm cache misses in millions")
+plt.savefig("parallel.png")
     

@@ -45,7 +45,7 @@ for key, val in stats.items():
     algo = meta[0]
     thread = meta[1]
     name = meta[3]
-    avg = np.mean(val)
+    avg = np.mean(val) 
     new_key = f"{algo}/{thread}/{name}"
     if data_map.get(new_key) is None:
         data_map[new_key] = []   
