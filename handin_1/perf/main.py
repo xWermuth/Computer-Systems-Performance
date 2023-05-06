@@ -14,12 +14,8 @@ stats:dict[str, list[float]] = {}
 for algo in ALGOS:
     for root, dirs, files in os.walk(f"./{algo}"):
         for file_path in files:
-            print(file_path)
-            print(root)
             if file_path.endswith(".txt"):
                 FILES.append(os.path.join(root, file_path))
-
-# print(FILES)
 
 for file_path in FILES:
     dir_split = file_path.split("/")
@@ -27,7 +23,6 @@ for file_path in FILES:
     algo = dir_split[1]
     thread = meta[0]
     hashbit = meta[1]
-    print(f"algo: {algo}")
     with open(file_path) as f:
         lines = f.readlines()
         for l in lines:
@@ -43,8 +38,6 @@ for file_path in FILES:
                 stats[key] = []
             stats[key].append(float(value))
     
-
-# print(stats)
 data_map:dict[str, list[float]] = {}
 
 for key, val in stats.items():
@@ -52,17 +45,14 @@ for key, val in stats.items():
     algo = meta[0]
     thread = meta[1]
     name = meta[3]
-    # print(thread)
-    # print(name)
     avg = np.mean(val)
     new_key = f"{algo}/{thread}/{name}"
     if data_map.get(new_key) is None:
-        data_map[new_key] = []    
-    data_map[new_key].append(avg)
+        data_map[new_key] = []   
+    hash_bit = int(meta[2].replace("h", "").strip())
+    data_map[new_key].append((hash_bit, avg))
 
-# print(data_map)
-
-HASH_BITS = list(range(1,2))
+HASH_BITS = list(range(1, 19))
 x_ticks = HASH_BITS
 map_idx = {}
 plot_idx = 0
@@ -71,19 +61,21 @@ for a_t, h_avg in data_map.items():
     algo = meta[0]
     thread = meta[1]
     name = meta[2]
-    # print(f"algo: {algo}")
     key = f"{algo}/{name}"
     if map_idx.get(key) is None:
         map_idx[key] = plot_idx
         plot_idx +=1
     plt.figure(map_idx[key])
-    plt.plot(x_ticks[:17], h_avg[:17], label=f"Thread {thread}")
+    # sort by hasbit
+    h_avg.sort(key=lambda a: a[0])
+    data = list(map(lambda x: x[1], h_avg))
+    n_thread = thread.replace("t", "")
+    plt.plot(x_ticks[:17], data[:17], label=f"Thread {n_thread}")
     plt.xticks(x_ticks)
     plt.legend()
 
 # Plot graphs
 for key, idx in map_idx.items():
-    # print(f"name: {name} idx: {idx}")
     meta = key.split("/")
     algo = meta[0]
     name = meta[1]
