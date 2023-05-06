@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 
 REGEX = "(?P<name>[a-zA-Z][a-zA-Z0-9)( -]*)\#\s*(?P<value>\d+\.\d+)"
 
-
+OUT_PIC_NAME = "./pictures"
+if not os.path.exists(OUT_PIC_NAME):
+    os.mkdir(OUT_PIC_NAME)
 ALGOS = ["concurrent", "parallel"]
 FILES:list[str] = []
 stats:dict[str, list[float]] = {}
@@ -86,6 +88,6 @@ for key, idx in map_idx.items():
     algo = meta[0]
     name = meta[1]
     plt.figure(idx)
-    plt.title(f"{algo}-{name}")
-    plt.savefig(f"pictures/{algo}-{name}.png")
+    plt.title(f"{algo} // {name}")
+    plt.savefig(f"{OUT_PIC_NAME}/{algo}-{name}.png")
     plt.close()
