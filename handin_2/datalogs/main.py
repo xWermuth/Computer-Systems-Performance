@@ -63,6 +63,7 @@ for key, cache_misses in data.items():
     thread = meta[1]
     hasbit = meta[2]
     cache_miss_avg = np.average(cache_misses) / DIVIDE_FACTOR
+    print()
     my_key = algo + "-" + thread
     if algo_map.get(my_key) is None:
         algo_map[my_key] = []    
