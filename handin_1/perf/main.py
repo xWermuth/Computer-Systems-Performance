@@ -24,7 +24,7 @@ for algo in ALGOS:
 
 for file_path in FILES:
     dir_split = file_path.split("/")
-    meta = dir_split[3].split("-")
+    meta = dir_split[2].split("-")
     algo = dir_split[1]
     thread = meta[0]
     hashbit = meta[1]
