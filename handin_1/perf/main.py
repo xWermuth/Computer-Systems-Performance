@@ -82,7 +82,7 @@ for a_t, h_avg in data_map.items():
     h_avg.sort(key=lambda a: a[0])
     data = list(map(lambda x: x[1], h_avg))
     n_thread = thread.replace("t", "")
-    plt.plot(x_ticks[:17], data[:17], label=f"Thread {n_thread}")
+    plt.plot(x_ticks[:18], data[:18], label=f"Thread {n_thread}")
     plt.xticks(x_ticks)
     plt.legend()
 
