@@ -92,6 +92,9 @@ for key, idx in map_idx.items():
     algo = meta[0]
     name = meta[1]
     plt.figure(idx)
+    if name == "LLC-load-misses" or name == "L1-dcache-load-misses":
+        plt.xlabel("Hasbits")
+        plt.ylabel("Cache misses in percentage")
     plt.title(f"{algo} // {name}")
     plt.savefig(f"{OUT_PIC_NAME}/{algo}-{name}.png")
     plt.close()
