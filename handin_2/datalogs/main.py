@@ -85,6 +85,8 @@ for a_t, h_avg in algo_map.items():
     data = list(map(lambda x: x[1], h_avg))
     plt.plot(x_ticks[:17], data[:17], label=f"Thread {thread}")
     plt.xticks(x_ticks)
+    plt.xlabel("Hashbits")
+    plt.ylabel("Cache misses in millions")
     plt.legend()
     ax = plt.gca()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
