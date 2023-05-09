@@ -100,6 +100,7 @@ def build_stress_test_bar_chart(test_type:str):
     names = ["time", "sm", "dec", "enc", "tx", "rx"]
     for i, n in enumerate(names):
         plt.figure(i)
+        plt.legend()
         plt.grid()
         plt.xticks([r + bar_width for r in range(0, FOLDS - 1)], [i for i in range(1, FOLDS)])
         plt.xlabel("Number of streams decoded")
@@ -109,8 +110,9 @@ def build_stress_test_bar_chart(test_type:str):
             plt.ylabel("Seconds")
         else:
             plt.ylabel("GiB/s")
-        plt.legend()
         plt.savefig(os.path.join(OUT_PATH, f"{test_type}_graph_{n}.png"))
+        plt.clf()
+        plt.cla()
 
 if not os.path.exists(OUT_PATH):
     os.mkdir(OUT_PATH)
