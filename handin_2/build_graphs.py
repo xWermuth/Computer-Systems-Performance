@@ -103,7 +103,7 @@ def build_stress_test_bar_chart(test_type:str):
         plt.legend()
         plt.grid()
         plt.xticks([r + bar_width for r in range(0, FOLDS - 1)], [i for i in range(1, FOLDS)])
-        plt.xlabel("Number of streams decoded")
+        plt.xlabel("Number of streams")
         if n == "sm" or n == "dec" or n == "enc":
             plt.ylabel("Percentage")
         elif n == "time":
@@ -114,12 +114,36 @@ def build_stress_test_bar_chart(test_type:str):
         plt.clf()
         plt.cla()
 
+def build_cpu_time_graph():
+    pci_gen = 3
+    pci_width = 16
+    times = []
+    for fold in range(1, FOLDS):
+        p = os.path.join(DATA_FOLDER, f"report_cpu_{pci_gen}_{pci_width}_{fold}.txt")
+        time_avg, _, _, _, _, _ = read_report(p)
+        times.append(time_avg)
+
+    plt.clf()
+    plt.cla()
+    bar_width = 0.25
+    x = [i + bar_width for i in range(0, FOLDS - 1)]
+    plt.bar(x, times, label="cpu", width = bar_width)
+    plt.legend()
+    plt.grid()
+    plt.title("Average time to decode on CPU in seconds")
+    plt.xlabel("Number of streams")
+    plt.ylabel("Seconds")
+    plt.xticks(x, [i for i in range(1, FOLDS)])
+    plt.savefig(os.path.join(OUT_PATH, "cpu_graph_time.png"))
+
+
 if not os.path.exists(OUT_PATH):
     os.mkdir(OUT_PATH)
 
 
 
-args = ["stress_test", "gpu", "cpu"]
+args = ["stress_test", "gpu"]
 
-for arg in args:
-    build_stress_test_bar_chart(arg)
+build_stress_test_bar_chart("stress_test")
+build_stress_test_bar_chart("gpu")
+build_cpu_time_graph()
