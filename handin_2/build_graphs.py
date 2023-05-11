@@ -97,7 +97,18 @@ def build_stress_test_bar_chart(test_type:str):
         plt.title(f"Average throughput recieved over PCI-E in GiB/s")
         plt.bar(x, rxs[pci_gen], color=color, width=bar_width, label=label)
 
+        if test_type == "stress_test":
+            plt.figure(6)
+            plt.title(f"Average throughput recieved and transmitted over PCI-E in GiB/s")
+            print([a + b for a, b in zip(rxs[pci_gen], txs[pci_gen])])
+            plt.bar(x, [a + b for a, b in zip(rxs[pci_gen], txs[pci_gen])], color=color, width=bar_width, label=label)
+
     names = ["time", "sm", "dec", "enc", "tx", "rx"]
+
+
+    if test_type == "stress_test":
+        names.append("total_pci")
+
     for i, n in enumerate(names):
         plt.figure(i)
         plt.legend()
