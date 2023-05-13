@@ -93,16 +93,16 @@ def build_stress_test_bar_chart(test_type:str, report_name = None, dir = DATA_FO
         plt.bar(x, encoders[pci_gen], color=color, width=bar_width, label=label)
 
         plt.figure(4)
-        plt.title(f"Average throughput transmitted over PCI-E in GiB/s")
+        plt.title(f"Average throughput transmitted over PCI-E in MiB/s")
         plt.bar(x, txs[pci_gen], color=color, width=bar_width, label=label)
 
         plt.figure(5)
-        plt.title(f"Average throughput recieved over PCI-E in GiB/s")
+        plt.title(f"Average throughput recieved over PCI-E in MiB/s")
         plt.bar(x, rxs[pci_gen], color=color, width=bar_width, label=label)
 
         if test_type == "stress_test" or test_type == "gpu" or test_type == "two_process":
             plt.figure(6)
-            plt.title(f"Average throughput recieved and transmitted over PCI-E in GiB/s")
+            plt.title(f"Average throughput recieved and transmitted over PCI-E in MiB/s")
             plt.bar(x, [a + b for a, b in zip(rxs[pci_gen], txs[pci_gen])], color=color, width=bar_width, label=label)
 
     names = ["time", "sm", "dec", "enc", "tx", "rx"]
@@ -122,7 +122,7 @@ def build_stress_test_bar_chart(test_type:str, report_name = None, dir = DATA_FO
         elif n == "time":
             plt.ylabel("Seconds")
         else:
-            plt.ylabel("GiB/s")
+            plt.ylabel("MiB/s")
         plt.savefig(os.path.join(OUT_PATH, f"{test_type}_graph_{n}.png"))
         plt.clf()
         plt.cla()
