@@ -113,7 +113,7 @@ def build_stress_test_bar_chart(test_type:str, report_name = None, dir = DATA_FO
 
     for i, n in enumerate(names):
         plt.figure(i)
-        plt.legend()
+        plt.legend(loc="lower right")
         plt.grid()
         plt.xticks([r + bar_width for r in range(0, FOLDS - 1)], [i for i in range(1, FOLDS)])
         plt.xlabel("Number of streams")
