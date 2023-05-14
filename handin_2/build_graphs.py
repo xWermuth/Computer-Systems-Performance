@@ -74,7 +74,7 @@ def build_stress_test_bar_chart(test_type:str, report_name = None, dir = DATA_FO
             x = [i + bar_width for i in range(0, FOLDS - 1)]
 
         color = 'r' if pci_gen == 0 else 'b' if pci_gen == 1 else 'g'
-        label = f"PCI-E x gen: {pci_gen + 1}" if _label == None else _label
+        label = f"PCI-E gen. {pci_gen + 1}" if _label == None else _label
 
         plt.figure(0)
         plt.title(f"Average time to decode in seconds")
