@@ -47,9 +47,6 @@ SMI_CMD = ["nvidia-smi",  "dmon", "-s", "pucvmt"]
 def get_gpu_stats_path(prefix:str):
     return os.path.join(DIR_NAME, f"gpu_stats{prefix}.txt")
 
-# def create_file(name: str) -> None:
-#     open
-
 def parse_gpu_state(GPU_OUT_FILE:str):
     gpu_stats = open(GPU_OUT_FILE, "r")
     lines = gpu_stats.readlines()
@@ -177,6 +174,5 @@ def main():
 
 
 if __name__ == '__main__':
-    print("hello")
     main()
     
