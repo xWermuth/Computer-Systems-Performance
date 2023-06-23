@@ -1,0 +1,31 @@
+# started on Sun May  7 02:53:10 2023
+
+
+ Performance counter stats for './build/handin_1 -t 16 -h 13 -a concurrent -q -p':
+
+       8018.812148      task-clock (msec)         #    0.872 CPUs utilized          
+               151      context-switches          #    0.019 K/sec                  
+                12      cpu-migrations            #    0.001 K/sec                  
+            150641      page-faults               #    0.019 M/sec                  
+       13818135024      cycles                    #    1.723 GHz                      (11.39%)
+        1629844693      stalled-cycles-frontend   #   11.79% frontend cycles idle     (11.39%)
+        8109897848      stalled-cycles-backend    #   58.69% backend cycles idle      (11.39%)
+        1977658322      instructions              #    0.14  insn per cycle         
+                                                  #    4.10  stalled cycles per insn  (17.08%)
+         294914842      branches                  #   36.778 M/sec                    (22.75%)
+           4599017      branch-misses             #    1.56% of all branches          (28.34%)
+        1131223604      L1-dcache-loads           #  141.071 M/sec                    (28.24%)
+          95215110      L1-dcache-load-misses     #    8.42% of all L1-dcache hits    (28.10%)
+         126909553      LLC-loads                 #   15.826 M/sec                    (27.92%)
+          42715697      LLC-load-misses           #   12.16% of all LL-cache hits     (27.72%)
+         575569304      L1-icache-loads           #   71.777 M/sec                    (10.92%)
+          13197526      L1-icache-load-misses                                         (10.87%)
+        1106929643      dTLB-loads                #  138.042 M/sec                    (16.13%)
+          23677234      dTLB-load-misses          #    2.14% of all dTLB cache hits   (15.83%)
+         561468710      iTLB-loads                #   70.019 M/sec                    (15.79%)
+            140307      iTLB-load-misses          #    0.02% of all iTLB cache hits   (11.08%)
+          54255558      L1-dcache-prefetches      #    6.766 M/sec                    (11.48%)
+                 0      L1-dcache-prefetch-misses #    0.000 K/sec                    (11.49%)
+
+       9.193819258 seconds time elapsed
+
