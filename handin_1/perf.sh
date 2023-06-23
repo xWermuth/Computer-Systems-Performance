@@ -56,12 +56,12 @@ do
             do
                 printf "\t\tIter %d\n" "$r" >> $outFile
                 rm -f perf.data perf.data.txt
-                perf record -e $events -o perf.data -D $delay ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q
+                perf record -e $events -o perf.data -D $delay ./build/handin_1 -t "$t" -h "$h" -a "$algo" -q -p
                 perf script -i perf.data > perf.data.txt
                 perf report |& tee "./$foldername/report-$r.txt"
                 if [ $? -ne 0 ];
                 then
-                    echo "Non-zero exit code with params '-t $t -h $h -a $algo -q'" >> $outFile
+                    echo "Non-zero exit code with params '-t $t -h $h -a $algo -q -p'" >> $outFile
                     break 1
                 fi
             done

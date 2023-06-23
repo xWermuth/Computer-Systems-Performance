@@ -6,6 +6,8 @@
 
 typedef std::pair<uint64_t, uint64_t> DataTuple;
 
+#define COUNT 16777216  // 2^24
+
 namespace Utils
 {
     typedef std::chrono::high_resolution_clock hp_clock;
@@ -36,13 +38,8 @@ namespace Utils
     }
 
     inline bool quiet = false;
-    std::vector<DataTuple> gen_tuples(int);
-    u_char *_sha256(u_char *bytes, size_t size);
-    u_char *sha256(u_char *bytes, size_t size);
-    u_char *sha256(uint64_t bytes, size_t size);
-    int getPartations(int hashbites);
-    void print_hash(u_char *hash);
-    long long hashBitsToIdx(u_char *hash, int hashbits);
+    const std::vector<DataTuple>& gen_tuples(int);
+    int get_partitions(int hashbites);
     std::thread sleep_for_x(const uint64_t ms);
 
     template<typename... Args>
@@ -52,4 +49,6 @@ namespace Utils
             return;
         printf(fmt, args...);
     }
+
+    void print_bin_size(std::vector<std::vector<DataTuple>> &buffers);
 }
